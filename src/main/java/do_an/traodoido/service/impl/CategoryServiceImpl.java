@@ -1,4 +1,4 @@
-package do_an.traodoido.service.iml;
+package do_an.traodoido.service.impl;
 
 import do_an.traodoido.dto.response.RestResponse;
 import do_an.traodoido.entity.Category;

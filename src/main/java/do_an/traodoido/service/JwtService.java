@@ -54,53 +54,5 @@ public class JwtService {
         }
         return jwsObject.serialize();
     }
-    
-    public boolean isTokenValid(String token, UserDetails userDetails) {
-        try {
-            final String username = extractUsername(token);
-            return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
-        } catch (Exception e) {
-            return false;
-        }
-    }
-    
-    private boolean isTokenExpired(String token) {
-        try {
-            return extractExpiration(token).before(new Date());
-        } catch (Exception e) {
-            return true;
-        }
-    }
-    
-    private Date extractExpiration(String token) throws ParseException, JOSEException {
-        return extractClaim(token, JWTClaimsSet::getExpirationTime);
-    }
-    
-    public String extractUsername(String token) {
-        try {
-            return extractClaim(token, JWTClaimsSet::getSubject);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-    
-    public <T> T extractClaim(String token, Function<JWTClaimsSet, T> claimsResolver) throws ParseException, JOSEException {
-        final JWTClaimsSet claims = extractAllClaims(token);
-        return claimsResolver.apply(claims);
-    }
-    
-    private JWTClaimsSet extractAllClaims(String token) throws ParseException, JOSEException {
-        // Parse the JWT
-        SignedJWT signedJWT = SignedJWT.parse(token);
-        
-        // Create verifier
-        MACVerifier verifier = new MACVerifier(secretKey);
-        
-        // Verify the signature
-        if (!signedJWT.verify(verifier)) {
-            throw new JOSEException("Invalid JWT signature");
-        }
-        
-        return signedJWT.getJWTClaimsSet();
-    }
+
 }
