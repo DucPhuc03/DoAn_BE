@@ -4,10 +4,11 @@ import do_an.traodoido.dto.request.CreatePostDTO;
 import do_an.traodoido.dto.response.ResPostDTO;
 import do_an.traodoido.dto.response.RestResponse;
 import do_an.traodoido.entity.Category;
+import do_an.traodoido.entity.Image;
 import do_an.traodoido.entity.Post;
 import do_an.traodoido.entity.User;
-import do_an.traodoido.exception.CategoryNotFoundException;
-import do_an.traodoido.exception.UserNotFoundException;
+import do_an.traodoido.exception.ResourceNotFoundException;
+import do_an.traodoido.exception.UnauthorizedAccessException;
 import do_an.traodoido.repository.CategoryRepository;
 import do_an.traodoido.repository.PostRepository;
 import do_an.traodoido.repository.UserRepository;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -32,10 +34,10 @@ public class PostServiceImpl implements PostService {
     public RestResponse<String> createPost(CreatePostDTO createPostDTO) {
             // Kiểm tra category có tồn tại không
             Category category = categoryRepository.findById(createPostDTO.getCategoryId())
-                    .orElseThrow(() -> new CategoryNotFoundException("Category not found with id: " + createPostDTO.getCategoryId()));
+                    .orElseThrow(() -> new ResourceNotFoundException("Category", createPostDTO.getCategoryId()));
             // Kiểm tra user có tồn tại không
             User user = userRepository.findById(createPostDTO.getUserId())
-                    .orElseThrow(() -> new UserNotFoundException("User not found with id: " + createPostDTO.getUserId()));
+                    .orElseThrow(() -> new ResourceNotFoundException("User", createPostDTO.getUserId()));
             // Tạo post mới
             Post post = Post.builder()
                     .title(createPostDTO.getTitle())
@@ -55,13 +57,60 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public RestResponse<String> deletePost(Long postId) {
-        return null;
+    public RestResponse<String> deletePost(Long postId, Long userId) {
+        // Tìm post theo ID
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new ResourceNotFoundException("Post", postId));
+        
+        // Kiểm tra quyền xóa - chỉ owner mới được xóa
+        if (!post.getUser().getId().equals(userId)) {
+            throw new UnauthorizedAccessException("You don't have permission to delete this post");
+        }
+        
+        // Xóa post (cascade sẽ xóa luôn images)
+        postRepository.delete(post);
+        
+        return RestResponse.<String>builder()
+                .code(1000)
+                .message("Post deleted successfully")
+                .data("Post with id " + postId + " has been deleted")
+                .build();
     }
 
     @Override
     public RestResponse<ResPostDTO> getPostDetails(Long postId) {
-        return null;
+        // Tìm post theo ID
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new ResourceNotFoundException("Post", postId));
+        
+        // Lấy danh sách image URLs
+        List<String> imageUrls = post.getImages() != null 
+                ? post.getImages().stream()
+                    .map(Image::getImageUrl)
+                    .collect(Collectors.toList())
+                : List.of();
+        
+        // Tạo ResPostDTO
+        ResPostDTO resPostDTO = ResPostDTO.builder()
+                .id(post.getId())
+                .userId(post.getUser().getId())
+                .username(post.getUser().getUsername())
+                .title(post.getTitle())
+                .description(post.getDescription())
+                .itemCondition(post.getItemCondition())
+                .postDate(post.getPostDate())
+                .tradeLocation(post.getTradeLocation())
+                .postStatus(post.getPostStatus())
+                .imageUrls(imageUrls)
+                .categoryName(post.getCategory().getName())
+                .categoryId(post.getCategory().getId())
+                .build();
+        
+        return RestResponse.<ResPostDTO>builder()
+                .code(1000)
+                .message("Post details retrieved successfully")
+                .data(resPostDTO)
+                .build();
     }
 
     @Override

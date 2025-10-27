@@ -22,7 +22,6 @@ public class Conversation {
     @JoinColumn(name = "participant1_id", nullable = false)
     private User participant1;
 
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "participant2_id", nullable = false)
     private User participant2;

@@ -1,5 +1,6 @@
 package do_an.traodoido.entity;
 
+import do_an.traodoido.enums.PostStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,7 +25,8 @@ public class Post {
     private String itemCondition;
     private LocalDate postDate;
     private String tradeLocation;
-
+    @Enumerated(EnumType.STRING)
+    private PostStatus postStatus;
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
@@ -32,7 +34,6 @@ public class Post {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
-
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<Image> images;
 }

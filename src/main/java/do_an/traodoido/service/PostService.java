@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface PostService {
     RestResponse<String> createPost(CreatePostDTO createPostDTO);
-    RestResponse<String> deletePost(Long postId);
+    RestResponse<String> deletePost(Long postId, Long userId);
     RestResponse<ResPostDTO> getPostDetails(Long postId);
     RestResponse<List<ResPostDTO>> getAllPosts(Long userId);
 }

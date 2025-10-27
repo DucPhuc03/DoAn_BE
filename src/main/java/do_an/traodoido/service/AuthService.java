@@ -4,6 +4,7 @@ import do_an.traodoido.dto.request.LoginRequest;
 import do_an.traodoido.dto.request.RegisterRequest;
 import do_an.traodoido.dto.response.LoginResponse;
 import do_an.traodoido.dto.response.RestResponse;
+import do_an.traodoido.dto.response.UserLogin;
 import do_an.traodoido.entity.User;
 import do_an.traodoido.exception.UsernameAlreadyExistsException;
 import do_an.traodoido.repository.UserRepository;
@@ -24,10 +25,18 @@ public class AuthService {
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword());
         authenticationManager.authenticate(authenticationToken);
-        String accessToken = jwtService.generateToken(loginRequest.getUsername());
-        
+        User user = userRepository.findByUsername(loginRequest.getUsername());
+        String accessToken = jwtService.generateToken(user);
+
+        UserLogin userLogin = UserLogin.builder()
+                .id(user.getId())
+                .name(user.getFullName())
+                .email(user.getEmail())
+                .role(user.getRole())
+                .build();
         return LoginResponse.builder()
                 .accessToken(accessToken)
+                .user(userLogin)
                 .build();
     }
     
