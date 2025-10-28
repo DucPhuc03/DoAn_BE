@@ -10,13 +10,17 @@ import do_an.traodoido.entity.User;
 import do_an.traodoido.exception.ResourceNotFoundException;
 import do_an.traodoido.exception.UnauthorizedAccessException;
 import do_an.traodoido.repository.CategoryRepository;
+import do_an.traodoido.repository.ImageRepository;
 import do_an.traodoido.repository.PostRepository;
 import do_an.traodoido.repository.UserRepository;
 import do_an.traodoido.service.PostService;
+import do_an.traodoido.service.S3Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,13 +33,15 @@ public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
+    private final S3Service s3Service;
+    private final ImageRepository imageRepository;
     
     @Override
-    public RestResponse<String> createPost(CreatePostDTO createPostDTO) {
-            // Kiểm tra category có tồn tại không
+    public RestResponse<String> createPost(CreatePostDTO createPostDTO, MultipartFile[] images) throws IOException {
+
             Category category = categoryRepository.findById(createPostDTO.getCategoryId())
                     .orElseThrow(() -> new ResourceNotFoundException("Category", createPostDTO.getCategoryId()));
-            // Kiểm tra user có tồn tại không
+
             User user = userRepository.findById(createPostDTO.getUserId())
                     .orElseThrow(() -> new ResourceNotFoundException("User", createPostDTO.getUserId()));
             // Tạo post mới
@@ -49,6 +55,14 @@ public class PostServiceImpl implements PostService {
                     .user(user)
                     .build();
             postRepository.save(post);
+            List<String> imageUrls = s3Service.uploadFiles(List.of(images),"post");
+            List<Image> imageEntities = imageUrls.stream()
+                    .map(url -> Image.builder()
+                            .imageUrl(url)
+                            .post(post)
+                            .build())
+                    .toList();
+            imageRepository.saveAll(imageEntities);
             return RestResponse.<String>builder()
                     .code(1000)
                     .message("Post created successfully")

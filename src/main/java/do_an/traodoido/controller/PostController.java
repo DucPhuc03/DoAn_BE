@@ -1,5 +1,6 @@
 package do_an.traodoido.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import do_an.traodoido.dto.request.CreatePostDTO;
 import do_an.traodoido.dto.response.ResPostDTO;
 import do_an.traodoido.dto.response.RestResponse;
@@ -8,8 +9,12 @@ import do_an.traodoido.service.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/post")
@@ -19,10 +24,15 @@ public class PostController {
     
     private final PostService postService;
     private final JwtService jwtService;
+    private final ObjectMapper objectMapper = new ObjectMapper();
     
-    @PostMapping
-    public ResponseEntity<RestResponse<String>> createPost(@Valid @RequestBody CreatePostDTO createPostDTO) {
-        RestResponse<String> response = postService.createPost(createPostDTO);
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<RestResponse<String>> createPost(
+            @RequestPart("images") MultipartFile[] images,
+            @Valid @RequestPart("postDTO") String postDTOJson
+    ) throws IOException {
+        CreatePostDTO createPostDTO = objectMapper.readValue(postDTOJson, CreatePostDTO.class);
+        RestResponse<String> response = postService.createPost(createPostDTO, images);
         return ResponseEntity.ok(response);
     }
     
