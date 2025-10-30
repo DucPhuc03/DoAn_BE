@@ -24,15 +24,15 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleResourceNotFound(ResourceNotFoundException ex) {
+    @ExceptionHandler(InvalidException.class)
+    public ResponseEntity<Map<String, Object>> handleResourceNotFound(InvalidException ex) {
         Map<String, Object> errorResponse = new HashMap<>();
         errorResponse.put("timestamp", LocalDateTime.now());
-        errorResponse.put("status", HttpStatus.NOT_FOUND.value());
+        errorResponse.put("status", HttpStatus.BAD_REQUEST.value());
         errorResponse.put("error", "Not Found");
         errorResponse.put("message", ex.getMessage());
         
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
     @ExceptionHandler(UnauthorizedAccessException.class)

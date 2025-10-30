@@ -4,7 +4,10 @@ import do_an.traodoido.dto.response.RestResponse;
 import do_an.traodoido.entity.Category;
 import do_an.traodoido.service.CategoryService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -12,6 +15,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/category")
 @RequiredArgsConstructor
+@Slf4j
 public class CategoryController {
     private final CategoryService categoryService;
 
@@ -22,6 +26,7 @@ public class CategoryController {
 
     @GetMapping
     public ResponseEntity<RestResponse<List<Category>>> getAllCategories() {
+
         return ResponseEntity.ok(categoryService.getAllCategories());
     }
 }
