@@ -47,4 +47,9 @@ public class ReviewServiceImpl implements ReviewService {
                 .data("Review ID: " + review.getId())
                 .build();
     }
+
+    @Override
+    public RestResponse<String> getReviewUser(Long userId) {
+        return null;
+    }
 }

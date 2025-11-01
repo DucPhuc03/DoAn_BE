@@ -7,4 +7,6 @@ import do_an.traodoido.dto.response.RestResponse;
 public interface ReviewService {
 
     RestResponse<String> createReview(CreateReviewDTO createReviewDTO);
+    RestResponse<String> getReviewUser(Long userId);
+
 }
