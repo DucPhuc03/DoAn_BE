@@ -13,4 +13,5 @@ public interface PostService {
     RestResponse<String> deletePost(Long postId, Long userId);
     RestResponse<ResPostDTO> getPostDetails(Long postId);
     RestResponse<List<ResPostDTO>> getPostByUserId(Long userId);
+    RestResponse<String> updatePost(CreatePostDTO createPostDTO, MultipartFile[] images, Long postId) throws IOException;
 }

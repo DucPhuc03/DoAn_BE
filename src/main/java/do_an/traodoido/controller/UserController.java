@@ -1,5 +1,6 @@
 package do_an.traodoido.controller;
 
+import do_an.traodoido.dto.request.UpdateProfileDTO;
 import do_an.traodoido.dto.response.ProfileDTO;
 import do_an.traodoido.dto.response.RestResponse;
 import do_an.traodoido.service.UserService;
@@ -24,5 +25,10 @@ public class UserController {
     public ResponseEntity<RestResponse<String>> updateAvatar(
             @RequestParam("avatar") MultipartFile avatarFile) throws Exception {
         return ResponseEntity.ok(userService.updateAvatar(avatarFile));
+    }
+    @PatchMapping("/profile")
+    public ResponseEntity<RestResponse<String>> updateProfile(
+            @RequestBody UpdateProfileDTO updateProfileDTO) {
+        return ResponseEntity.ok(userService.updateProfile(updateProfileDTO));
     }
 }

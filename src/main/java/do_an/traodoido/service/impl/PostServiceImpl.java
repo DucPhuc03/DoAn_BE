@@ -15,6 +15,7 @@ import do_an.traodoido.repository.PostRepository;
 import do_an.traodoido.repository.UserRepository;
 import do_an.traodoido.service.PostService;
 import do_an.traodoido.service.S3Service;
+ 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -155,5 +156,63 @@ public class PostServiceImpl implements PostService {
                 .message("Posts retrieved successfully")
                 .data(resPostDTOs)
                 .build();
+    }
+
+    @Override
+    public RestResponse<String> updatePost(CreatePostDTO createPostDTO, MultipartFile[] images, Long postId) throws IOException {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new InvalidException("Post", postId));
+        User user = resolveCurrentUser();
+        // Simple ownership check based on provided userId to match existing record
+        if (!post.getUser().getId().equals(user.getId())) {
+            throw new UnauthorizedAccessException("You don't have permission to update this post");
+        }
+
+        Category category = categoryRepository.findById(createPostDTO.getCategoryId())
+                .orElseThrow(() -> new InvalidException("Category", createPostDTO.getCategoryId()));
+
+        post.setTitle(createPostDTO.getTitle());
+        post.setDescription(createPostDTO.getDescription());
+        post.setItemCondition(createPostDTO.getItemCondition());
+        post.setPostDate(createPostDTO.getPostDate() != null ? createPostDTO.getPostDate() : post.getPostDate());
+        post.setTradeLocation(createPostDTO.getTradeLocation());
+        post.setCategory(category);
+
+        postRepository.save(post);
+
+        // If new images provided, replace existing images
+        if (images != null && images.length > 0) {
+            List<Image> existingImages = post.getImages();
+            if (existingImages != null && !existingImages.isEmpty()) {
+                imageRepository.deleteAll(existingImages);
+            }
+            List<String> imageUrls = s3Service.uploadFiles(List.of(images), "post");
+            List<Image> imageEntities = imageUrls.stream()
+                    .map(url -> Image.builder()
+                            .imageUrl(url)
+                            .post(post)
+                            .build())
+                    .toList();
+            imageRepository.saveAll(imageEntities);
+        }
+
+        return RestResponse.<String>builder()
+                .code(1000)
+                .message("Post updated successfully")
+                .data("Post updated with id: " + post.getId())
+                .build();
+    }
+
+    private User resolveCurrentUser() {
+        org.springframework.security.core.Authentication authentication = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new UnauthorizedAccessException("User is not authenticated");
+        }
+        String username = authentication.getName();
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            throw new InvalidException("User", "username", username);
+        }
+        return user;
     }
 }

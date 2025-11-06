@@ -1,5 +1,6 @@
 package do_an.traodoido.service.impl;
 
+import do_an.traodoido.dto.request.UpdateProfileDTO;
 import do_an.traodoido.dto.response.ProfileDTO;
 import do_an.traodoido.dto.response.ResPostDTO;
 import do_an.traodoido.dto.response.RestResponse;
@@ -105,6 +106,21 @@ public class UserServiceImpl implements UserService {
                 .code(1000)
                 .message("Avatar updated successfully")
                 .data(avatarUrl)
+                .build();
+    }
+
+    @Override
+    public RestResponse<String> updateProfile(UpdateProfileDTO updateProfileDTO) {
+        User user = getCurrentUser();
+        user.setFullName(updateProfileDTO.getFullName());
+        user.setPhoneNumber(updateProfileDTO.getPhoneNumber());
+        user.setAddress(updateProfileDTO.getAddress());
+        user.setBio(updateProfileDTO.getBio());
+        userRepository.save(user);
+        return RestResponse.<String>builder()
+                .code(1000)
+                .message("Profile updated successfully")
+                .data("Profile updated")
                 .build();
     }
 }

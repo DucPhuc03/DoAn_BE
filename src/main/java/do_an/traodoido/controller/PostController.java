@@ -70,4 +70,15 @@ public class PostController {
         RestResponse<String> response = postService.deletePost(id, userId);
         return ResponseEntity.ok(response);
     }
+
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<RestResponse<String>> updatePost(
+            @PathVariable Long id,
+            @RequestPart("postDTO") String postDTOJson,
+            @RequestPart(value = "images", required = false) MultipartFile[] images
+    ) throws IOException {
+        CreatePostDTO updateDTO = objectMapper.readValue(postDTOJson, CreatePostDTO.class);
+        RestResponse<String> response = postService.updatePost(updateDTO, images, id);
+        return ResponseEntity.ok(response);
+    }
 }
