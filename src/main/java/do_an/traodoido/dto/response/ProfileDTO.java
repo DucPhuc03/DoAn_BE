@@ -21,4 +21,13 @@ public class ProfileDTO {
     private String bio;
     private String address;
     private List<ResPostDTO> posts;
+
+    private boolean canSetting;
+    private boolean isFollowing;
+    private boolean canFollow;
+    private boolean canReport;
+    private boolean canEditAddress;
+    private boolean canEditBio;
+    private int trades;
+
 }

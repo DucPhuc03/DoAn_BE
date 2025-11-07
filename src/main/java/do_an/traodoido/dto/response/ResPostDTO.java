@@ -1,5 +1,7 @@
 package do_an.traodoido.dto.response;
 
+import do_an.traodoido.entity.Category;
+import do_an.traodoido.entity.Comment;
 import do_an.traodoido.enums.PostStatus;
 import lombok.Builder;
 import lombok.Data;
@@ -19,7 +21,14 @@ public class ResPostDTO {
     private LocalDate postDate;
     private String tradeLocation;
     private PostStatus postStatus;
+    private Category category;
     private List<String> imageUrls;
-    private String categoryName;
-    private Long categoryId;
+    private List<CommentDTO> comments;
+
+    private boolean isLiked;
+    private boolean canEdit;
+    private boolean canDelete;
+    private boolean canReport;
+    private int totalLikes;
+    private int totalComments;
 }

@@ -10,25 +10,28 @@ import do_an.traodoido.repository.CommentRepository;
 import do_an.traodoido.repository.PostRepository;
 import do_an.traodoido.repository.UserRepository;
 import do_an.traodoido.service.CommentService;
+import do_an.traodoido.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
 
 @Service
 @RequiredArgsConstructor
 public class CommentServiceImpl implements CommentService {
     private  final PostRepository postRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final CommentRepository commentRepository;
     @Override
     public RestResponse<String> createComment(CreateCommentDTO createCommentDTO) {
         Post post = postRepository.findById(createCommentDTO.getPostId()).orElseThrow(()->new InvalidException("Post not found with id: " + createCommentDTO.getPostId()));
-        User user = userRepository.findById(createCommentDTO.getUserId()).orElseThrow(()->new InvalidException("User not found with id: " + createCommentDTO.getUserId()));
+        User user = userService.getCurrentUser();
 
         Comment comment = Comment.builder()
                 .post(post)
                 .user(user)
                 .content(createCommentDTO.getContent())
-                .commentDate(createCommentDTO.getCommentDate())
+                .commentDate(LocalDate.now())
                 .build();
         commentRepository.save(comment);
         return RestResponse.<String>builder()

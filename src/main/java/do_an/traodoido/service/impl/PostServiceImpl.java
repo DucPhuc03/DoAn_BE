@@ -1,6 +1,7 @@
 package do_an.traodoido.service.impl;
 
 import do_an.traodoido.dto.request.CreatePostDTO;
+import do_an.traodoido.dto.response.CommentDTO;
 import do_an.traodoido.dto.response.ResPostDTO;
 import do_an.traodoido.dto.response.RestResponse;
 import do_an.traodoido.entity.Category;
@@ -116,8 +117,7 @@ public class PostServiceImpl implements PostService {
                 .tradeLocation(post.getTradeLocation())
                 .postStatus(post.getPostStatus())
                 .imageUrls(imageUrls)
-                .categoryName(post.getCategory().getName())
-                .categoryId(post.getCategory().getId())
+                .category(post.getCategory())
                 .build();
         
         return RestResponse.<ResPostDTO>builder()
@@ -136,6 +136,18 @@ public class PostServiceImpl implements PostService {
                     .map(Image::getImageUrl)
                     .collect(Collectors.toList())
                     : List.of();
+
+            List<CommentDTO> commentDTOs = post.getComments() != null
+                    ? post.getComments().stream()
+                    .map(comment -> CommentDTO.builder()
+                            .id(comment.getId())
+                            .userId(comment.getUser().getId())
+                            .fullName(comment.getUser().getUsername())
+                            .content(comment.getContent())
+                            .commentDate(comment.getCommentDate())
+                            .build())
+                    .toList()
+                    : List.of();
             return ResPostDTO.builder()
                     .id(post.getId())
                     .userId(post.getUser().getId())
@@ -147,8 +159,9 @@ public class PostServiceImpl implements PostService {
                     .tradeLocation(post.getTradeLocation())
                     .postStatus(post.getPostStatus())
                     .imageUrls(imageUrls)
-                    .categoryName(post.getCategory().getName())
-                    .categoryId(post.getCategory().getId())
+                    .comments(commentDTOs)
+                    .totalComments(commentDTOs.size())
+                    .category(post.getCategory())
                     .build();
         }).toList();
         return RestResponse.<List<ResPostDTO>>builder()

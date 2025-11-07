@@ -10,8 +10,6 @@ import java.time.LocalDate;
 @Builder
 public class CreateCommentDTO {
     private Long postId;
-    private Long userId;
     private String content;
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private LocalDate commentDate;
+
 }

@@ -21,7 +21,7 @@ public class Meeting {
     private String location;
     private LocalDate meetingDate;
 
-    @ManyToOne
-    @JoinColumn(name = "trade_id")
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "trade_id", nullable = false, unique = true)
     private Trade trade;
 }

@@ -9,6 +9,7 @@ import java.util.List;
 @Builder
 public class ResConversationDTO {
     private Long conversationId;
+
     private String itemTitle;
     List<ResMessageDTO> messages;
 }
