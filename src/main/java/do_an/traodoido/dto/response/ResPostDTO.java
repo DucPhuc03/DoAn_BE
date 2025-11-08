@@ -29,6 +29,7 @@ public class ResPostDTO {
     private boolean canEdit;
     private boolean canDelete;
     private boolean canReport;
+    private boolean canUpdateStatus;
     private int totalLikes;
     private int totalComments;
 }

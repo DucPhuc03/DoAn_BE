@@ -83,9 +83,14 @@ public class UserServiceImpl implements UserService {
                 .fullName(user.getFullName())
                 .email(user.getEmail())
                 .phoneNumber(user.getPhoneNumber())
+                .bio(user.getBio())
                 .address(user.getAddress())
                 .avatarUrl(user.getAvatarUrl())
                 .posts(userPosts)
+                .canSetting(true)
+                .canEditAddress(true)
+                .canEditBio(true)
+                .canFollow(true)
                 .build();
 
         return RestResponse.<ProfileDTO>builder()

@@ -105,6 +105,18 @@ public class PostServiceImpl implements PostService {
                     .map(Image::getImageUrl)
                     .collect(Collectors.toList())
                 : List.of();
+
+        List<CommentDTO> commentDTOs = post.getComments() != null
+                ? post.getComments().stream()
+                .map(comment -> CommentDTO.builder()
+                        .id(comment.getId())
+                        .userId(comment.getUser().getId())
+                        .fullName(comment.getUser().getUsername())
+                        .content(comment.getContent())
+                        .commentDate(comment.getCommentDate())
+                        .build())
+                .toList()
+                : List.of();
         // Tạo ResPostDTO
         ResPostDTO resPostDTO = ResPostDTO.builder()
                 .id(post.getId())
@@ -117,7 +129,14 @@ public class PostServiceImpl implements PostService {
                 .tradeLocation(post.getTradeLocation())
                 .postStatus(post.getPostStatus())
                 .imageUrls(imageUrls)
+                .comments(commentDTOs)
+                .totalComments(commentDTOs.size())
                 .category(post.getCategory())
+                .canEdit(true)
+                .canDelete(true)
+                .canReport(false)
+                .canUpdateStatus(true)
+                .isLiked(true)
                 .build();
         
         return RestResponse.<ResPostDTO>builder()
@@ -162,6 +181,10 @@ public class PostServiceImpl implements PostService {
                     .comments(commentDTOs)
                     .totalComments(commentDTOs.size())
                     .category(post.getCategory())
+                    .canEdit(true)
+                    .canDelete(true)
+                    .canReport(false)
+                    .canUpdateStatus(true)
                     .build();
         }).toList();
         return RestResponse.<List<ResPostDTO>>builder()
