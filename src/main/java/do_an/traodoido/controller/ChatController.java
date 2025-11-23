@@ -8,6 +8,7 @@ import do_an.traodoido.entity.User;
 import do_an.traodoido.exception.InvalidException;
 import do_an.traodoido.repository.ConversationRepository;
 import do_an.traodoido.repository.MessageRepository;
+import do_an.traodoido.repository.UserRepository;
 import do_an.traodoido.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +30,7 @@ public class ChatController {
     private final UserService userService;
     private final ConversationRepository conversationRepository;
     private final MessageRepository messageRepository;
+    private final UserRepository userRepository;
 
     @MessageMapping("/chat.sendMessage/{conversationId}")
     @SendTo("/chat-trade/{conversationId}") // Gửi tin nhắn đến broker
@@ -36,6 +38,7 @@ public class ChatController {
             @DestinationVariable Long conversationId,
             @Payload String chatMessage) {
         User currentUser = userService.getCurrentUser();
+
 
 
         Conversation conversation = conversationRepository.findById(conversationId)
@@ -53,6 +56,7 @@ public class ChatController {
 
         return ResMessageDTO.builder()
                 .id(message.getId())
+                .senderId(currentUser.getId())
                 .avatarUrl(currentUser.getAvatarUrl())
                 .senderName(currentUser.getFullName())
                 .timestamp(message.getTimestamp())

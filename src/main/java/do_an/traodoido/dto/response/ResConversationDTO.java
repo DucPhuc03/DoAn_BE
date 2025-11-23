@@ -10,5 +10,8 @@ import java.util.List;
 public class ResConversationDTO {
     private Long conversationId;
     private String itemTitle;
+    private String itemImage;
+    private String username;
+    private String userAvatar;
     List<ResMessageDTO> messages;
 }

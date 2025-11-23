@@ -23,6 +23,7 @@ public class Post {
     private String title;
     private String description;
     private String itemCondition;
+    private String tag;
     private LocalDate postDate;
     private String tradeLocation;
     @Enumerated(EnumType.STRING)

@@ -36,7 +36,7 @@ public class ConversationServiceImpl implements ConversationService  {
                                         ? conversation.getTrade().getOwnerPost().getTitle()
                                         : null
                         )
-                        .messages(mapMessages(conversation.getMessages()))
+                        .messages(mapMessages(conversation.getMessages(),currentUserId))
                         .build())
                 .collect(Collectors.toList());
 
@@ -47,7 +47,7 @@ public class ConversationServiceImpl implements ConversationService  {
                 .build();
     }
 
-    private List<ResMessageDTO> mapMessages(List<Message> messages) {
+    private List<ResMessageDTO> mapMessages(List<Message> messages,Long id) {
         if (messages == null) {
             return List.of();
         }
@@ -56,9 +56,11 @@ public class ConversationServiceImpl implements ConversationService  {
                 .map(m -> ResMessageDTO.builder()
                         .id(m.getId())
                         .senderName(m.getSender() != null ? m.getSender().getFullName() : null)
+                        .senderId(m.getSender() != null ? m.getSender().getId() : null)
                         .avatarUrl(m.getSender() != null ? m.getSender().getAvatarUrl() : null)
                         .timestamp(m.getTimestamp())
                         .content(m.getContent())
+                        .isMe(m.getSender().getId().equals(id))
                         .isRead(m.isRead())
                         .build())
                 .collect(Collectors.toList());

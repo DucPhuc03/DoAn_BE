@@ -9,9 +9,11 @@ import java.time.LocalDateTime;
 @Builder
 public class ResMessageDTO {
     private Long id;
+    private Long senderId;
     private String senderName;
     private LocalDateTime timestamp;
     private String avatarUrl;
     private boolean isRead;
+    private boolean isMe;
     private String content;
 }

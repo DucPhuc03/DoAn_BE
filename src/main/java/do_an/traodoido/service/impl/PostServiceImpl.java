@@ -50,6 +50,7 @@ public class PostServiceImpl implements PostService {
             Post post = Post.builder()
                     .title(createPostDTO.getTitle())
                     .description(createPostDTO.getDescription())
+                    .tag(createPostDTO.getTag())
                     .itemCondition(createPostDTO.getItemCondition())
                     .postDate(createPostDTO.getPostDate() != null ? createPostDTO.getPostDate() : LocalDate.now())
                     .tradeLocation(createPostDTO.getTradeLocation())

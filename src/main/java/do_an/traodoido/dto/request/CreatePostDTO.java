@@ -19,6 +19,7 @@ public class CreatePostDTO {
     
     @NotBlank(message = "Description is required")
     private String description;
+    private String tag;
     
     @NotBlank(message = "Item condition is required")
     private String itemCondition;

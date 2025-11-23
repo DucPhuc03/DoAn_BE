@@ -33,6 +33,7 @@ public class WebSecurityConfig {
 
     private static final String[] whitelistedEndpoints = {
             "/api/auth/**",
+            "/ws/**",
             "/v3/api-docs/**",
             "/swagger-ui/**",
             "/swagger-ui.html"
