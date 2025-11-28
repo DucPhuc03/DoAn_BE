@@ -8,6 +8,7 @@ import do_an.traodoido.entity.Category;
 import do_an.traodoido.entity.Image;
 import do_an.traodoido.entity.Post;
 import do_an.traodoido.entity.User;
+import do_an.traodoido.enums.PostStatus;
 import do_an.traodoido.exception.InvalidException;
 import do_an.traodoido.exception.UnauthorizedAccessException;
 import do_an.traodoido.repository.CategoryRepository;
@@ -54,6 +55,7 @@ public class PostServiceImpl implements PostService {
                     .itemCondition(createPostDTO.getItemCondition())
                     .postDate(createPostDTO.getPostDate() != null ? createPostDTO.getPostDate() : LocalDate.now())
                     .tradeLocation(createPostDTO.getTradeLocation())
+                    .postStatus(PostStatus.Approval)
                     .category(category)
                     .user(user)
                     .build();
@@ -96,10 +98,13 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public RestResponse<ResPostDTO> getPostDetails(Long postId) {
+
         // Tìm post theo ID
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new InvalidException("Post", postId));
-        
+
+        User user = resolveCurrentUser();
+        boolean isOwner = post.getUser().getId().equals(user.getId());
         // Lấy danh sách image URLs
         List<String> imageUrls = post.getImages() != null 
                 ? post.getImages().stream()
@@ -133,10 +138,10 @@ public class PostServiceImpl implements PostService {
                 .comments(commentDTOs)
                 .totalComments(commentDTOs.size())
                 .category(post.getCategory())
-                .canEdit(true)
-                .canDelete(true)
-                .canReport(false)
-                .canUpdateStatus(true)
+                .canEdit(isOwner)
+                .canDelete(isOwner)
+                .canReport(!isOwner)
+                .canUpdateStatus(isOwner)
                 .isLiked(true)
                 .build();
         
@@ -237,6 +242,18 @@ public class PostServiceImpl implements PostService {
                 .code(1000)
                 .message("Post updated successfully")
                 .data("Post updated with id: " + post.getId())
+                .build();
+    }
+
+    @Override
+    public RestResponse<String> changePostStatus(Long postId, String status) {
+
+        Post post = postRepository.findById(postId).orElseThrow(() -> new InvalidException("Post", postId));
+        post.setPostStatus(Enum.valueOf(PostStatus.class, status));
+        return RestResponse.<String>builder()
+                .code(1000)
+                .message("Post status updated successfully")
+                .data("Post status updated to: " + status)
                 .build();
     }
 

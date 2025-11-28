@@ -43,7 +43,7 @@ public class PostController {
     @GetMapping("/{id}")
     public ResponseEntity<RestResponse<ResPostDTO>> getPostDetails(@PathVariable Long id) {
 
-        log.info("Received request to get all categories"+userService.getCurrentUserId());
+
         RestResponse<ResPostDTO> response = postService.getPostDetails(id);
         return ResponseEntity.ok(response);
     }

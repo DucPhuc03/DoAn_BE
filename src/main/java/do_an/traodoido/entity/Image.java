@@ -1,10 +1,7 @@
 package do_an.traodoido.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Data
 @Entity
@@ -17,6 +14,7 @@ public class Image {
     private Long id;
     private String imageUrl;
 
+    @ToString.Exclude
     @ManyToOne
     @JoinColumn(name = "post_id")
     private Post post;

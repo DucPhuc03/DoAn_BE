@@ -23,7 +23,6 @@ public class Trade {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private LocalDate dateCompleted;
     @Enumerated(EnumType.STRING)
     private TradeStatus tradeStatus;
@@ -34,12 +33,16 @@ public class Trade {
     @ManyToOne
     @JoinColumn(name = "user_owner_id", nullable = false)
     private User owner;
+    @ManyToOne
+    @JoinColumn(name = "requester_post_id", nullable = true)
+    private Post requesterPost;
 
     @ManyToOne
     @JoinColumn(name = "owner_post_id", nullable = false)
     private Post ownerPost;
-    @OneToMany(mappedBy = "trade", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private List<TradeItem> tradeItems;
+
+
+
 
     private LocalDateTime createdAt;
 

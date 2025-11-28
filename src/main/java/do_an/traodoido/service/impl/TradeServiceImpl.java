@@ -31,7 +31,7 @@ public class TradeServiceImpl implements TradeService {
     private final UserRepository userRepository;
     private final UserService userService;
     private final ConversationRepository conversationRepository;
-    private SimpMessageSendingOperations messagingTemplate;
+    private  final SimpMessageSendingOperations messagingTemplate;
 
     public RestResponse<String> createTrade(CreateTradeDTO createTradeDTO){
         User userRequester = userService.getCurrentUser();
@@ -60,15 +60,34 @@ public class TradeServiceImpl implements TradeService {
                 .conversationId(conversation.getId())
                 .build();
 
-        messagingTemplate.convertAndSendToUser(
-                String.valueOf(userOwner.getId()),
-                "/queue/notification",
-                payload
-        );
+//        messagingTemplate.convertAndSendToUser(
+//                String.valueOf(userOwner.getId()),
+//                "/queue/notification",
+//                payload
+//        );
         return RestResponse.<String>builder()
                 .code(1000)
                 .message("Success")
                 .data("Trade created successfully").build();
+    }
+
+    @Override
+    public RestResponse<String> updateTradeStatus(Long tradeId, String status) {
+
+        return null;
+    }
+
+    @Override
+    public RestResponse<String> updateRequesterPost(Long tradeId, Long requesterPostId) {
+        Trade trade = tradeRepository.findById(tradeId).orElseThrow(()->new InvalidException("Trade not found"));
+        Post requesterPost = postRepository.findById(requesterPostId).orElseThrow(()->new InvalidException("Requester post not found"));
+
+        trade.setRequesterPost(requesterPost);
+        tradeRepository.save(trade);
+        return RestResponse.<String>builder()
+                .code(1000)
+                .message("Success")
+                .data("Requester post updated successfully").build();
     }
 
 }

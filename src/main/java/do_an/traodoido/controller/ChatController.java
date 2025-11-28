@@ -1,6 +1,6 @@
 package do_an.traodoido.controller;
 
-import do_an.traodoido.dto.request.SendMessageRequest;
+import do_an.traodoido.dto.request.ChatMessageDTO;
 import do_an.traodoido.dto.response.ResMessageDTO;
 import do_an.traodoido.entity.Conversation;
 import do_an.traodoido.entity.Message;
@@ -36,17 +36,15 @@ public class ChatController {
     @SendTo("/chat-trade/{conversationId}") // Gửi tin nhắn đến broker
     public ResMessageDTO sendMessage(
             @DestinationVariable Long conversationId,
-            @Payload String chatMessage) {
-        User currentUser = userService.getCurrentUser();
-
-
+            @Payload ChatMessageDTO chatMessage) {
+        User currentUser = userRepository.findById(chatMessage.getSenderId()).orElseThrow();
 
         Conversation conversation = conversationRepository.findById(conversationId)
                 .orElseThrow(() -> new InvalidException("Conversation not found with id: " + conversationId));
         Message message = Message.builder()
                 .conversation(conversation)
                 .sender(currentUser)
-                .content(chatMessage)
+                .content(chatMessage.getContent())
                 .isRead(false)
                 .timestamp(LocalDateTime.now())
                 .build();
@@ -60,7 +58,7 @@ public class ChatController {
                 .avatarUrl(currentUser.getAvatarUrl())
                 .senderName(currentUser.getFullName())
                 .timestamp(message.getTimestamp())
-                .content(chatMessage)
+                .content(chatMessage.getContent())
                 .isRead(message.isRead())
                 .build();
     }
@@ -68,7 +66,7 @@ public class ChatController {
     @PostMapping("/api/chat/{conversationId}/messages")
     public ResMessageDTO sendMessageRest(
             @PathVariable Long conversationId,
-            @RequestBody SendMessageRequest request) {
+            @RequestBody ChatMessageDTO request) {
         User currentUser = userService.getCurrentUser();
 
 

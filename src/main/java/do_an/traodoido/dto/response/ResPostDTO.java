@@ -5,11 +5,14 @@ import do_an.traodoido.entity.Comment;
 import do_an.traodoido.enums.PostStatus;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDate;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 @Builder
 public class ResPostDTO {
     private Long id;
