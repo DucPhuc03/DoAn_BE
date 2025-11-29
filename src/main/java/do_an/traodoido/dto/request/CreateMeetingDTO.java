@@ -14,6 +14,8 @@ import java.time.LocalDate;
 public class CreateMeetingDTO {
     private Long tradeId;
     private String location;
-    private LocalDate meetingDate;
+    private String time;
+    private String note;
+    private LocalDate date;
 }
 

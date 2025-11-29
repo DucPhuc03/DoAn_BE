@@ -41,9 +41,6 @@ public class Trade {
     @JoinColumn(name = "owner_post_id", nullable = false)
     private Post ownerPost;
 
-
-
-
     private LocalDateTime createdAt;
 
 }

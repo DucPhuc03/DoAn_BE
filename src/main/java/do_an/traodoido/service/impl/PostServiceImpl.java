@@ -1,25 +1,21 @@
 package do_an.traodoido.service.impl;
 
 import do_an.traodoido.dto.request.CreatePostDTO;
-import do_an.traodoido.dto.response.CommentDTO;
-import do_an.traodoido.dto.response.ResPostDTO;
-import do_an.traodoido.dto.response.RestResponse;
-import do_an.traodoido.entity.Category;
-import do_an.traodoido.entity.Image;
-import do_an.traodoido.entity.Post;
-import do_an.traodoido.entity.User;
+import do_an.traodoido.dto.request.UpdateStatusPost;
+import do_an.traodoido.dto.response.*;
+import do_an.traodoido.entity.*;
 import do_an.traodoido.enums.PostStatus;
 import do_an.traodoido.exception.InvalidException;
 import do_an.traodoido.exception.UnauthorizedAccessException;
-import do_an.traodoido.repository.CategoryRepository;
-import do_an.traodoido.repository.ImageRepository;
-import do_an.traodoido.repository.PostRepository;
-import do_an.traodoido.repository.UserRepository;
+import do_an.traodoido.repository.*;
 import do_an.traodoido.service.PostService;
 import do_an.traodoido.service.S3Service;
  
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -38,10 +34,10 @@ public class PostServiceImpl implements PostService {
     private final UserRepository userRepository;
     private final S3Service s3Service;
     private final ImageRepository imageRepository;
+    private final LikeRepository likeRepository;
     
     @Override
     public RestResponse<String> createPost(CreatePostDTO createPostDTO, MultipartFile[] images) throws IOException {
-
             Category category = categoryRepository.findById(createPostDTO.getCategoryId())
                     .orElseThrow(() -> new InvalidException("Category", createPostDTO.getCategoryId()));
 
@@ -97,13 +93,14 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public RestResponse<ResPostDTO> getPostDetails(Long postId) {
-
+    public RestResponse<ResPostDetailDTO> getPostDetails(Long postId) {
         // Tìm post theo ID
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new InvalidException("Post", postId));
 
         User user = resolveCurrentUser();
+
+        boolean isLiked = likeRepository.existsByPostIdAndUserId(postId, user.getId());
         boolean isOwner = post.getUser().getId().equals(user.getId());
         // Lấy danh sách image URLs
         List<String> imageUrls = post.getImages() != null 
@@ -124,7 +121,7 @@ public class PostServiceImpl implements PostService {
                 .toList()
                 : List.of();
         // Tạo ResPostDTO
-        ResPostDTO resPostDTO = ResPostDTO.builder()
+        ResPostDetailDTO resPostDTO = ResPostDetailDTO.builder()
                 .id(post.getId())
                 .userId(post.getUser().getId())
                 .username(post.getUser().getUsername())
@@ -137,15 +134,16 @@ public class PostServiceImpl implements PostService {
                 .imageUrls(imageUrls)
                 .comments(commentDTOs)
                 .totalComments(commentDTOs.size())
+                .totalLikes(post.getLikeCount())
                 .category(post.getCategory())
                 .canEdit(isOwner)
                 .canDelete(isOwner)
                 .canReport(!isOwner)
                 .canUpdateStatus(isOwner)
-                .isLiked(true)
+                .isLiked(isLiked)
                 .build();
         
-        return RestResponse.<ResPostDTO>builder()
+        return RestResponse.<ResPostDetailDTO>builder()
                 .code(1000)
                 .message("Post details retrieved successfully")
                 .data(resPostDTO)
@@ -153,9 +151,9 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public RestResponse<List<ResPostDTO>> getPostByUserId(Long userId) {
+    public RestResponse<List<ResPostDetailDTO>> getPostByUserId(Long userId) {
         List<Post> posts = postRepository.findByUserId(userId);
-        List<ResPostDTO> resPostDTOs = posts.stream().map(post -> {
+        List<ResPostDetailDTO> resPostDTOs = posts.stream().map(post -> {
             List<String> imageUrls = post.getImages() != null
                     ? post.getImages().stream()
                     .map(Image::getImageUrl)
@@ -173,7 +171,7 @@ public class PostServiceImpl implements PostService {
                             .build())
                     .toList()
                     : List.of();
-            return ResPostDTO.builder()
+            return ResPostDetailDTO.builder()
                     .id(post.getId())
                     .userId(post.getUser().getId())
                     .username(post.getUser().getUsername())
@@ -193,7 +191,7 @@ public class PostServiceImpl implements PostService {
                     .canUpdateStatus(true)
                     .build();
         }).toList();
-        return RestResponse.<List<ResPostDTO>>builder()
+        return RestResponse.<List<ResPostDetailDTO>>builder()
                 .code(1000)
                 .message("Posts retrieved successfully")
                 .data(resPostDTOs)
@@ -205,7 +203,7 @@ public class PostServiceImpl implements PostService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new InvalidException("Post", postId));
         User user = resolveCurrentUser();
-        // Simple ownership check based on provided userId to match existing record
+
         if (!post.getUser().getId().equals(user.getId())) {
             throw new UnauthorizedAccessException("You don't have permission to update this post");
         }
@@ -215,6 +213,7 @@ public class PostServiceImpl implements PostService {
 
         post.setTitle(createPostDTO.getTitle());
         post.setDescription(createPostDTO.getDescription());
+        post.setTag(createPostDTO.getTag());
         post.setItemCondition(createPostDTO.getItemCondition());
         post.setPostDate(createPostDTO.getPostDate() != null ? createPostDTO.getPostDate() : post.getPostDate());
         post.setTradeLocation(createPostDTO.getTradeLocation());
@@ -246,14 +245,118 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public RestResponse<String> changePostStatus(Long postId, String status) {
-
-        Post post = postRepository.findById(postId).orElseThrow(() -> new InvalidException("Post", postId));
-        post.setPostStatus(Enum.valueOf(PostStatus.class, status));
+    public RestResponse<String> changePostStatus(UpdateStatusPost updateStatusPost) {
+        Post post = postRepository.findById(updateStatusPost.getPostId()).orElseThrow(() -> new InvalidException("Post", updateStatusPost.getPostId()));
+        post.setPostStatus(Enum.valueOf(PostStatus.class, updateStatusPost.getStatus()));
+        postRepository.save(post);
         return RestResponse.<String>builder()
                 .code(1000)
                 .message("Post status updated successfully")
-                .data("Post status updated to: " + status)
+                .data("Post status updated to: " + updateStatusPost.getStatus())
+                .build();
+    }
+
+    @Override
+    public List<ResPostDTO> getLikedPostsByUser(Long userId) {
+
+        List<Like> likes = likeRepository.findByUserId(userId);
+
+        List<ResPostDTO> likedPosts = likes.stream()
+                .map(like -> {
+                    Post post = like.getPost();
+                    return ResPostDTO.builder()
+                            .id(post.getId())
+                            .title(post.getTitle())
+                            .username(post.getUser().getUsername())
+                            .postDate(post.getPostDate())
+                            .imageUrl(post.getImages().stream().findFirst().map(Image::getImageUrl).orElse(null))
+                            .totalLikes(post.getLikeCount())
+                            .category(post.getCategory())
+
+                            .build();
+                })
+                .toList();
+        return likedPosts;
+    }
+
+    @Override
+    public RestPageResponse<List<ResPostDetailDTO>> searchPosts(String title, String categoryName, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        String normalizedTitle = normalizeQueryParam(title);
+        String normalizedCategoryName = normalizeQueryParam(categoryName);
+
+        Page<Post> postPage;
+        if (normalizedTitle == null && normalizedCategoryName == null) {
+            postPage = postRepository.findAll(pageable);
+        } else {
+            postPage = postRepository.searchPostsByTitleAndCategory(
+                    normalizedTitle,
+                    normalizedCategoryName,
+                    pageable
+            );
+        }
+
+        List<ResPostDetailDTO> resPostDTOs = postPage.getContent().stream()
+                .map(this::mapToResPostDTO)
+                .toList();
+
+        MetaData metaData = MetaData.builder()
+                .page(postPage.getNumber())
+                .size(postPage.getSize())
+                .totalElements((int) postPage.getTotalElements())
+                .totalPages(postPage.getTotalPages())
+                .build();
+
+        return RestPageResponse.<List<ResPostDetailDTO>>builder()
+                .code(1000)
+                .message("Posts retrieved successfully")
+                .data(resPostDTOs)
+                .metaData(metaData)
+                .build();
+    }
+
+    private String normalizeQueryParam(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        return value.trim();
+    }
+
+    private ResPostDetailDTO mapToResPostDTO(Post post) {
+        List<String> imageUrls = post.getImages() != null
+                ? post.getImages().stream()
+                .map(Image::getImageUrl)
+                .collect(Collectors.toList())
+                : List.of();
+
+        List<CommentDTO> commentDTOs = post.getComments() != null
+                ? post.getComments().stream()
+                .map(comment -> CommentDTO.builder()
+                        .id(comment.getId())
+                        .userId(comment.getUser().getId())
+                        .fullName(comment.getUser().getFullName() != null
+                                ? comment.getUser().getFullName()
+                                : comment.getUser().getUsername())
+                        .content(comment.getContent())
+                        .commentDate(comment.getCommentDate())
+                        .build())
+                .toList()
+                : List.of();
+
+        return ResPostDetailDTO.builder()
+                .id(post.getId())
+                .userId(post.getUser().getId())
+                .username(post.getUser().getUsername())
+                .title(post.getTitle())
+                .description(post.getDescription())
+                .itemCondition(post.getItemCondition())
+                .postDate(post.getPostDate())
+                .tradeLocation(post.getTradeLocation())
+                .postStatus(post.getPostStatus())
+                .imageUrls(imageUrls)
+                .comments(commentDTOs)
+                .totalComments(commentDTOs.size())
+                .category(post.getCategory())
                 .build();
     }
 

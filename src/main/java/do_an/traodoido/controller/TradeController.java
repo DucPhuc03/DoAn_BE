@@ -1,14 +1,13 @@
 package do_an.traodoido.controller;
 
 import do_an.traodoido.dto.request.CreateTradeDTO;
+import do_an.traodoido.dto.request.UpdateTradePostDTO;
+import do_an.traodoido.dto.response.ResTradeDetailDTO;
 import do_an.traodoido.dto.response.RestResponse;
 import do_an.traodoido.service.TradeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/trade")
@@ -20,5 +19,15 @@ public class TradeController {
     public ResponseEntity<RestResponse<String>> createTrade(@RequestBody CreateTradeDTO createTradeDTO) {
 
         return ResponseEntity.ok(tradeService.createTrade(createTradeDTO));
+    }
+
+    @GetMapping("/{tradeId}")
+    public ResponseEntity<RestResponse<ResTradeDetailDTO>> getTradeDetails(@PathVariable Long tradeId) {
+        return ResponseEntity.ok(tradeService.getTradeDetails(tradeId));
+    }
+
+    @PostMapping("/update-post")
+    public ResponseEntity<RestResponse<String>> updateTradePost(@RequestBody UpdateTradePostDTO updateTradePostDTO) {
+        return ResponseEntity.ok(tradeService.updateRequesterPost(updateTradePostDTO));
     }
 }

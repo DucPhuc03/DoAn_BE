@@ -26,6 +26,8 @@ public class Post {
     private String tradeLocation;
     @Enumerated(EnumType.STRING)
     private PostStatus postStatus;
+
+    private int likeCount=0;
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
@@ -40,4 +42,5 @@ public class Post {
     @ToString.Exclude
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<Comment> comments;
+
 }

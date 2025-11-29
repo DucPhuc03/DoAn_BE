@@ -16,4 +16,6 @@ public interface MeetingRepository extends JpaRepository<Meeting, Long> {
             + " ORDER BY m.meetingDate DESC"
     )
     List<Meeting> findByUserId(@Param("userId") Long userId);
+
+    Meeting findByTradeId(Long tradeId);
 }

@@ -9,6 +9,7 @@ import java.util.List;
 @Builder
 public class ResConversationDTO {
     private Long conversationId;
+    private Long tradeId;
     private String itemTitle;
     private String itemImage;
     private String username;

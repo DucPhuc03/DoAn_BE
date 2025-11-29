@@ -3,6 +3,7 @@ package do_an.traodoido.service.impl;
 import do_an.traodoido.dto.request.CreateMeetingDTO;
 import do_an.traodoido.dto.response.ResMeetingDTO;
 import do_an.traodoido.dto.response.RestResponse;
+import do_an.traodoido.dto.response.TradeMeetingDTO;
 import do_an.traodoido.entity.Meeting;
 import do_an.traodoido.entity.Trade;
 import do_an.traodoido.entity.User;
@@ -37,15 +38,18 @@ public class MeetingServiceImpl implements MeetingService {
         if (request.getLocation() == null || request.getLocation().trim().isEmpty()) {
             throw new InvalidException("Location is required");
         }
-        if (request.getMeetingDate() == null) {
+        if (request.getDate() == null) {
             throw new InvalidException("Meeting date is required");
         }
 
         // Create meeting
         Meeting meeting = Meeting.builder()
                 .trade(trade)
+                .note(request.getNote())
+                .creator(userService.getCurrentUser())
+                .time(request.getTime())
                 .location(request.getLocation())
-                .meetingDate(request.getMeetingDate())
+                .meetingDate(request.getDate())
                 .build();
 
         meeting = meetingRepository.save(meeting);
@@ -95,6 +99,21 @@ public class MeetingServiceImpl implements MeetingService {
                 .message("Meetings retrieved successfully")
                 .data(responses)
                 .build();
+    }
+
+    @Override
+    public TradeMeetingDTO getMeetingTrade(Long tradeId) {
+        return null;
+    }
+
+    @Override
+    public RestResponse<String> updateMeeting(Long meetingId, CreateMeetingDTO request) {
+        return null;
+    }
+
+    @Override
+    public RestResponse<String> cancelMeeting(Long meetingId) {
+        return null;
     }
 }
 

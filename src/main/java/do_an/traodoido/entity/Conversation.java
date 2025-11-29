@@ -1,16 +1,14 @@
 package do_an.traodoido.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 
 @Entity
 @Builder
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "conversations")
@@ -30,6 +28,7 @@ public class Conversation {
     @JoinColumn(name = "trade_id", nullable = false, unique = true)
     private Trade trade;
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Message> messages;
 }

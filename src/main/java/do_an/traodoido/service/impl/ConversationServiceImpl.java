@@ -5,6 +5,7 @@ import do_an.traodoido.dto.response.ResMessageDTO;
 import do_an.traodoido.dto.response.RestResponse;
 import do_an.traodoido.entity.Conversation;
 import do_an.traodoido.entity.Message;
+import do_an.traodoido.entity.User;
 import do_an.traodoido.repository.ConversationRepository;
 import do_an.traodoido.service.ConversationService;
 import do_an.traodoido.service.UserService;
@@ -30,11 +31,29 @@ public class ConversationServiceImpl implements ConversationService  {
         List<ResConversationDTO> data = conversations.stream()
                 .map(conversation -> ResConversationDTO.builder()
                         .conversationId(conversation.getId())
+                        .tradeId(conversation.getTrade() != null ? conversation.getTrade().getId() : null)
                         .itemTitle(
                                 conversation.getTrade() != null
                                         && conversation.getTrade().getOwnerPost() != null
                                         ? conversation.getTrade().getOwnerPost().getTitle()
                                         : null
+                        )
+                        .itemImage(conversation.getTrade() != null
+                                && conversation.getTrade().getOwnerPost() != null && conversation.getTrade().getOwnerPost().getImages() != null
+                                ? conversation.getTrade().getOwnerPost().getImages().stream()
+                                    .findFirst()
+                                    .map(image -> image.getImageUrl())
+                                    .orElse(null)
+                                : null)
+                        .userAvatar(
+                                conversation.getParticipant1().getId().equals(currentUserId)
+                                        ? conversation.getParticipant2().getAvatarUrl()
+                                        : conversation.getParticipant1().getAvatarUrl()
+                        )
+                        .username(
+                                conversation.getParticipant1().getId().equals(currentUserId)
+                                        ? conversation.getParticipant2().getFullName()
+                                        : conversation.getParticipant1().getFullName()
                         )
                         .messages(mapMessages(conversation.getMessages(),currentUserId))
                         .build())

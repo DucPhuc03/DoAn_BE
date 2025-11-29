@@ -1,5 +1,6 @@
 package do_an.traodoido.entity;
 
+import do_an.traodoido.enums.MeetingStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,7 +21,13 @@ public class Meeting {
     private Long id;
     private String location;
     private LocalDate meetingDate;
-
+    private String time;
+    private String note;
+    @Enumerated(EnumType.STRING)
+    private MeetingStatus status;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User creator;
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "trade_id", nullable = false, unique = true)
     private Trade trade;

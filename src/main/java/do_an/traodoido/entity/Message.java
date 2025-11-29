@@ -1,14 +1,12 @@
 package do_an.traodoido.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
-@Data
+@Getter
+@Setter
 @Table(name = "messages")
 @Entity
 @NoArgsConstructor
@@ -25,6 +23,8 @@ public class Message {
     private LocalDateTime timestamp;
 
     private boolean isRead;
+
+    @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "conversation_id", nullable = false)
     private Conversation conversation;
