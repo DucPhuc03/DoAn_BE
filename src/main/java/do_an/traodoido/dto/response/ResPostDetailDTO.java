@@ -16,9 +16,11 @@ public class ResPostDetailDTO {
     private Long id;
     private Long userId;
     private String username;
+    private String avatarUrl;
     private String title;
     private String description;
     private String itemCondition;
+    private String tag;
     private LocalDate postDate;
     private String tradeLocation;
     private PostStatus postStatus;

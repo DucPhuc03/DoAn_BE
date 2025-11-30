@@ -2,6 +2,7 @@ package do_an.traodoido.service.impl;
 
 import do_an.traodoido.dto.request.UpdateProfileDTO;
 import do_an.traodoido.dto.response.ProfileDTO;
+import do_an.traodoido.dto.response.ResPostDTO;
 import do_an.traodoido.dto.response.ResPostDetailDTO;
 import do_an.traodoido.dto.response.RestResponse;
 import do_an.traodoido.entity.User;
@@ -79,7 +80,7 @@ public class UserServiceImpl implements UserService {
         User currentUser = getCurrentUser();
         boolean isOwnProfile = currentUser.getId().equals(userId);
         User user = userRepository.findById(userId).orElseThrow(() -> new InvalidException("User", userId));
-        List<ResPostDetailDTO> userPosts = postService.getPostByUserId(userId).getData();
+        List<ResPostDTO> userPosts = postService.getPostByUserId(userId).getData();
         ProfileDTO profileDTO = ProfileDTO.builder()
                 .id(user.getId())
                 .username(user.getUsername())

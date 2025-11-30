@@ -10,6 +10,7 @@ import java.time.LocalDate;
 public class ResMeetingDTO {
     private Long id;
     private String location;
+    private String time;
     private LocalDate meetingDate;
     private String titleTrade;
     private String namePartner;

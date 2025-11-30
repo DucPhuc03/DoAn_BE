@@ -20,7 +20,7 @@ public class ProfileDTO {
     private String avatarUrl;
     private String bio;
     private String address;
-    private List<ResPostDetailDTO> posts;
+    private List<ResPostDTO> posts;
     private List<ResPostDTO> likedPosts;
 
     private boolean canSetting;

@@ -3,12 +3,10 @@ package do_an.traodoido.service.impl;
 import do_an.traodoido.dto.request.CreateTradeDTO;
 import do_an.traodoido.dto.request.TradeNotificationPayload;
 import do_an.traodoido.dto.request.UpdateTradePostDTO;
+import do_an.traodoido.dto.response.ResTradeDTO;
 import do_an.traodoido.dto.response.ResTradeDetailDTO;
 import do_an.traodoido.dto.response.RestResponse;
-import do_an.traodoido.entity.Conversation;
-import do_an.traodoido.entity.Post;
-import do_an.traodoido.entity.Trade;
-import do_an.traodoido.entity.User;
+import do_an.traodoido.entity.*;
 import do_an.traodoido.enums.TradeStatus;
 import do_an.traodoido.exception.InvalidException;
 import do_an.traodoido.repository.ConversationRepository;
@@ -23,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @Transactional
@@ -33,7 +32,7 @@ public class TradeServiceImpl implements TradeService {
     private final UserRepository userRepository;
     private final UserService userService;
     private final ConversationRepository conversationRepository;
-    private  final SimpMessageSendingOperations messagingTemplate;
+    private final SimpMessageSendingOperations messagingTemplate;
 
     public RestResponse<String> createTrade(CreateTradeDTO createTradeDTO){
         User userRequester = userService.getCurrentUser();
@@ -62,11 +61,11 @@ public class TradeServiceImpl implements TradeService {
                 .conversationId(conversation.getId())
                 .build();
 
-//        messagingTemplate.convertAndSendToUser(
-//                String.valueOf(userOwner.getId()),
-//                "/queue/notification",
-//                payload
-//        );
+        messagingTemplate.convertAndSendToUser(
+                String.valueOf(userOwner.getId()),
+                "/queue/notification",
+                payload
+        );
         return RestResponse.<String>builder()
                 .code(1000)
                 .message("Success")
@@ -74,9 +73,14 @@ public class TradeServiceImpl implements TradeService {
     }
 
     @Override
-    public RestResponse<String> updateTradeStatus(Long tradeId, String status) {
-
-        return null;
+    public RestResponse<String> updateTradeStatus(Long tradeId) {
+        Trade trade = tradeRepository.findById(tradeId).orElseThrow(()->new InvalidException("Trade not found"));
+        trade.setTradeStatus(trade.getTradeStatus().equals(TradeStatus.PENDING) ? TradeStatus.COMPLETED_PENDING : TradeStatus.COMPLETED);
+        tradeRepository.save(trade);
+        return RestResponse.<String>builder()
+                .code(1000)
+                .message("Success")
+                .data("Trade status updated successfully").build();
     }
 
     @Override
@@ -90,6 +94,48 @@ public class TradeServiceImpl implements TradeService {
                 .code(1000)
                 .message("Success")
                 .data("Requester post updated successfully").build();
+    }
+
+    @Override
+    public RestResponse<List<ResTradeDTO>> getTradesByUser() {
+        Long userId = userService.getCurrentUserId();
+        List<Trade> trades = tradeRepository.findByRequesterIdOrOwnerId(userId, userId);
+        List<ResTradeDTO> data = trades.stream().map(trade -> {
+            User partner= trade.getOwner().getId().equals(userId) ? trade.getRequester() : trade.getOwner();
+            return ResTradeDTO.builder()
+                    .tradeId(trade.getId())
+                    .userId(partner.getId())
+                    .userName(partner.getFullName())
+                    .userAvatar(partner.getAvatarUrl())
+                    .requesterPostTitle(
+                            trade.getRequesterPost() != null
+                                    ? trade.getRequesterPost().getTitle()
+                                    : null
+                    )
+                    .requesterPostImage(
+                            trade.getRequesterPost() != null
+                                    ? trade.getRequesterPost().getImages().stream().map(Image::getImageUrl).findFirst().orElse(null)
+                                    : null
+                    )
+                    .ownerPostTitle(
+                            trade.getOwnerPost() != null
+                                    ? trade.getOwnerPost().getTitle()
+                                    : null
+                    )
+                    .ownerPostImage(
+                            trade.getOwnerPost() != null
+                                    ? trade.getOwnerPost().getImages().stream().map(Image::getImageUrl).findFirst().orElse(null)
+                                    : null
+                    )
+                    .status(trade.getTradeStatus())
+                    .canRate(trade.getTradeStatus().equals(TradeStatus.COMPLETED))
+                    .build();
+        }).toList();
+        return RestResponse.<List<ResTradeDTO>>builder()
+                .code(1000)
+                .message("Success")
+                .data(data)
+                .build();
     }
 
     @Override

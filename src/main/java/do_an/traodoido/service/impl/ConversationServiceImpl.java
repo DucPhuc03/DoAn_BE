@@ -8,6 +8,7 @@ import do_an.traodoido.entity.Message;
 import do_an.traodoido.entity.User;
 import do_an.traodoido.repository.ConversationRepository;
 import do_an.traodoido.service.ConversationService;
+import do_an.traodoido.service.MeetingService;
 import do_an.traodoido.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
 public class ConversationServiceImpl implements ConversationService  {
     private final ConversationRepository conversationRepository;
     private final UserService userService;
+    private final MeetingService meetingService;
 
     @Override
     public RestResponse<List<ResConversationDTO>> getConversationIds() {
@@ -56,6 +58,9 @@ public class ConversationServiceImpl implements ConversationService  {
                                         : conversation.getParticipant1().getFullName()
                         )
                         .messages(mapMessages(conversation.getMessages(),currentUserId))
+                        .meeting(meetingService.getMeetingTrade(
+                                conversation.getTrade() != null ? conversation.getTrade().getId() : null
+                        ))
                         .build())
                 .collect(Collectors.toList());
 

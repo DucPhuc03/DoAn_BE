@@ -1,12 +1,14 @@
 package do_an.traodoido.service.impl;
 
 import do_an.traodoido.dto.request.CreateMeetingDTO;
+import do_an.traodoido.dto.request.UpdateStatusMeetingDTO;
 import do_an.traodoido.dto.response.ResMeetingDTO;
 import do_an.traodoido.dto.response.RestResponse;
 import do_an.traodoido.dto.response.TradeMeetingDTO;
 import do_an.traodoido.entity.Meeting;
 import do_an.traodoido.entity.Trade;
 import do_an.traodoido.entity.User;
+import do_an.traodoido.enums.MeetingStatus;
 import do_an.traodoido.exception.InvalidException;
 import do_an.traodoido.repository.MeetingRepository;
 import do_an.traodoido.repository.TradeRepository;
@@ -34,7 +36,6 @@ public class MeetingServiceImpl implements MeetingService {
         Trade trade = tradeRepository.findById(request.getTradeId())
                 .orElseThrow(() -> new InvalidException("Trade not found with id: " + request.getTradeId()));
 
-        // Validate required fields
         if (request.getLocation() == null || request.getLocation().trim().isEmpty()) {
             throw new InvalidException("Location is required");
         }
@@ -47,6 +48,7 @@ public class MeetingServiceImpl implements MeetingService {
                 .trade(trade)
                 .note(request.getNote())
                 .creator(userService.getCurrentUser())
+                .status(MeetingStatus.WAITING)
                 .time(request.getTime())
                 .location(request.getLocation())
                 .meetingDate(request.getDate())
@@ -86,6 +88,7 @@ public class MeetingServiceImpl implements MeetingService {
                     return ResMeetingDTO.builder()
                             .id(meeting.getId())
                             .location(meeting.getLocation())
+                            .time(meeting.getTime())
                             .meetingDate(meeting.getMeetingDate())
                             .titleTrade(titleTrade)
                             .namePartner(partner != null ? partner.getFullName() : null)
@@ -103,17 +106,51 @@ public class MeetingServiceImpl implements MeetingService {
 
     @Override
     public TradeMeetingDTO getMeetingTrade(Long tradeId) {
-        return null;
+        User user = userService.getCurrentUser();
+        Meeting meeting = meetingRepository.findByTradeId(tradeId);
+        if(meeting == null) {
+            return null;
+        }
+
+        boolean isCreator = user.getId().equals(meeting.getCreator().getId());
+
+        return TradeMeetingDTO.builder()
+                .meetingId(meeting.getId())
+                .tradeId(tradeId)
+                .location(meeting.getLocation())
+                .meetingDate(meeting.getMeetingDate())
+                .time(meeting.getTime())
+                .note(meeting.getNote())
+                .status(meeting.getStatus())
+                .isCreator(isCreator)
+                .canEdit(meeting.getStatus() == MeetingStatus.WAITING && isCreator)
+                .build();
+
     }
 
     @Override
-    public RestResponse<String> updateMeeting(Long meetingId, CreateMeetingDTO request) {
-        return null;
+    public RestResponse<String> updateStatusMeeting(Long meetingId) {
+        Meeting meeting = meetingRepository.findById(meetingId).orElseThrow(() -> new InvalidException("Meeting not found with id: " + meetingId));
+
+        meeting.setStatus(MeetingStatus.SCHEDULED);
+        return RestResponse.<String>builder()
+                .code(200)
+                .message("Meeting status updated successfully")
+                .data("Meeting status updated successfully")
+                .build();
     }
 
     @Override
     public RestResponse<String> cancelMeeting(Long meetingId) {
-        return null;
+        Meeting meeting = meetingRepository.findById(meetingId).orElseThrow(() -> new InvalidException("Meeting not found with id: " + meetingId));
+
+        meetingRepository.delete(meeting);
+
+        return RestResponse.<String>builder()
+                .code(200)
+                .message("Meeting cancelled successfully")
+                .data("Meeting cancelled successfully")
+                .build();
     }
 }
 

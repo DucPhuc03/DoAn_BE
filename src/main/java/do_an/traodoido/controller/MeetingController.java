@@ -25,4 +25,13 @@ public class MeetingController {
     public ResponseEntity<RestResponse<List<ResMeetingDTO>>> getMeetingByTradeId() {
         return ResponseEntity.ok(meetingService.getMeetingsByUser());
     }
+
+    @PatchMapping("/{meetingId}")
+    public ResponseEntity<RestResponse<String>> updateStatusMeeting(@PathVariable Long meetingId) {
+        return ResponseEntity.ok(meetingService.updateStatusMeeting(meetingId));
+    }
+    @DeleteMapping("/{meetingId}")
+    public ResponseEntity<RestResponse<String>> cancelMeeting(@PathVariable Long meetingId) {
+        return ResponseEntity.ok(meetingService.cancelMeeting(meetingId));
+    }
 }

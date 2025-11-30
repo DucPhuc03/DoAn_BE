@@ -21,6 +21,5 @@ public class TradeMeetingDTO {
 
     private boolean isCreator;
     private boolean canEdit;
-    private boolean canCancel;
 
 }

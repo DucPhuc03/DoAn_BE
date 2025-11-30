@@ -1,6 +1,7 @@
 package do_an.traodoido.service;
 
 import do_an.traodoido.dto.request.CreateMeetingDTO;
+import do_an.traodoido.dto.request.UpdateStatusMeetingDTO;
 import do_an.traodoido.dto.response.ResMeetingDTO;
 import do_an.traodoido.dto.response.RestResponse;
 import do_an.traodoido.dto.response.TradeMeetingDTO;
@@ -13,7 +14,7 @@ public interface MeetingService {
 
     TradeMeetingDTO  getMeetingTrade(Long tradeId);
 
-    RestResponse<String> updateMeeting(Long meetingId, CreateMeetingDTO request);
+   RestResponse<String> updateStatusMeeting(Long meetingId);
 
     RestResponse<String> cancelMeeting(Long meetingId);
 

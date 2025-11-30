@@ -15,4 +15,5 @@ public class ResConversationDTO {
     private String username;
     private String userAvatar;
     List<ResMessageDTO> messages;
+    TradeMeetingDTO meeting;
 }

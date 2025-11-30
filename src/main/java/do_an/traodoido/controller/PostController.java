@@ -3,6 +3,7 @@ package do_an.traodoido.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import do_an.traodoido.dto.request.CreatePostDTO;
 import do_an.traodoido.dto.request.UpdateStatusPost;
+import do_an.traodoido.dto.response.ResPostDTO;
 import do_an.traodoido.dto.response.ResPostDetailDTO;
 import do_an.traodoido.dto.response.RestPageResponse;
 import do_an.traodoido.dto.response.RestResponse;
@@ -47,8 +48,8 @@ public class PostController {
         return ResponseEntity.ok(response);
     }
     @GetMapping("/user/{userId}")
-    public ResponseEntity<RestResponse<List<ResPostDetailDTO>>> getPostsByUserId(@PathVariable Long userId) {
-        RestResponse<List<ResPostDetailDTO>> response = postService.getPostByUserId(userId);
+    public ResponseEntity<RestResponse<List<ResPostDTO>>> getPostsByUserId(@PathVariable Long userId) {
+        RestResponse<List<ResPostDTO>> response = postService.getPostByUserId(userId);
         return ResponseEntity.ok(response);
     }
     

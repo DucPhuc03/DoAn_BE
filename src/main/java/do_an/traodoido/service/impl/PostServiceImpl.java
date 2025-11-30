@@ -51,7 +51,7 @@ public class PostServiceImpl implements PostService {
                     .itemCondition(createPostDTO.getItemCondition())
                     .postDate(createPostDTO.getPostDate() != null ? createPostDTO.getPostDate() : LocalDate.now())
                     .tradeLocation(createPostDTO.getTradeLocation())
-                    .postStatus(PostStatus.Approval)
+                    .postStatus(PostStatus.AVAILABLE)
                     .category(category)
                     .user(user)
                     .build();
@@ -114,6 +114,7 @@ public class PostServiceImpl implements PostService {
                 .map(comment -> CommentDTO.builder()
                         .id(comment.getId())
                         .userId(comment.getUser().getId())
+                        .avatarUrl(comment.getUser().getAvatarUrl())
                         .fullName(comment.getUser().getUsername())
                         .content(comment.getContent())
                         .commentDate(comment.getCommentDate())
@@ -125,8 +126,10 @@ public class PostServiceImpl implements PostService {
                 .id(post.getId())
                 .userId(post.getUser().getId())
                 .username(post.getUser().getUsername())
+                .avatarUrl(post.getUser().getAvatarUrl())
                 .title(post.getTitle())
                 .description(post.getDescription())
+                .tag(post.getTag())
                 .itemCondition(post.getItemCondition())
                 .postDate(post.getPostDate())
                 .tradeLocation(post.getTradeLocation())
@@ -151,47 +154,19 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public RestResponse<List<ResPostDetailDTO>> getPostByUserId(Long userId) {
+    public RestResponse<List<ResPostDTO>> getPostByUserId(Long userId) {
         List<Post> posts = postRepository.findByUserId(userId);
-        List<ResPostDetailDTO> resPostDTOs = posts.stream().map(post -> {
-            List<String> imageUrls = post.getImages() != null
-                    ? post.getImages().stream()
-                    .map(Image::getImageUrl)
-                    .collect(Collectors.toList())
-                    : List.of();
-
-            List<CommentDTO> commentDTOs = post.getComments() != null
-                    ? post.getComments().stream()
-                    .map(comment -> CommentDTO.builder()
-                            .id(comment.getId())
-                            .userId(comment.getUser().getId())
-                            .fullName(comment.getUser().getUsername())
-                            .content(comment.getContent())
-                            .commentDate(comment.getCommentDate())
-                            .build())
-                    .toList()
-                    : List.of();
-            return ResPostDetailDTO.builder()
-                    .id(post.getId())
-                    .userId(post.getUser().getId())
-                    .username(post.getUser().getUsername())
-                    .title(post.getTitle())
-                    .description(post.getDescription())
-                    .itemCondition(post.getItemCondition())
-                    .postDate(post.getPostDate())
-                    .tradeLocation(post.getTradeLocation())
-                    .postStatus(post.getPostStatus())
-                    .imageUrls(imageUrls)
-                    .comments(commentDTOs)
-                    .totalComments(commentDTOs.size())
-                    .category(post.getCategory())
-                    .canEdit(true)
-                    .canDelete(true)
-                    .canReport(false)
-                    .canUpdateStatus(true)
-                    .build();
+        List<ResPostDTO> resPostDTOs = posts.stream().map(post -> {
+            return ResPostDTO.builder()
+                   .id(post.getId())
+                   .username(post.getUser().getUsername())
+                   .title(post.getTitle())
+                   .postDate(post.getPostDate())
+                   .imageUrl(post.getImages().stream().findFirst().map(Image::getImageUrl).orElse(null))
+                   .category(post.getCategory())
+                   .build();
         }).toList();
-        return RestResponse.<List<ResPostDetailDTO>>builder()
+        return RestResponse.<List<ResPostDTO>>builder()
                 .code(1000)
                 .message("Posts retrieved successfully")
                 .data(resPostDTOs)
