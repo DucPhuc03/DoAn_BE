@@ -26,6 +26,9 @@ public class Trade {
     private LocalDate dateCompleted;
     @Enumerated(EnumType.STRING)
     private TradeStatus tradeStatus;
+
+    private Long userStart;
+    private Long userEnd;
     @ManyToOne
     @JoinColumn(name = "user_requester_id", nullable = false)
     private User requester;

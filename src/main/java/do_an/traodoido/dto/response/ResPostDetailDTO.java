@@ -28,6 +28,7 @@ public class ResPostDetailDTO {
     private List<String> imageUrls;
     private List<CommentDTO> comments;
 
+    private boolean isOwner;
     private boolean isLiked;
     private boolean canEdit;
     private boolean canDelete;

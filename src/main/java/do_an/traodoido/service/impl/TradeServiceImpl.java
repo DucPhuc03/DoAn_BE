@@ -7,12 +7,10 @@ import do_an.traodoido.dto.response.ResTradeDTO;
 import do_an.traodoido.dto.response.ResTradeDetailDTO;
 import do_an.traodoido.dto.response.RestResponse;
 import do_an.traodoido.entity.*;
+import do_an.traodoido.enums.PostStatus;
 import do_an.traodoido.enums.TradeStatus;
 import do_an.traodoido.exception.InvalidException;
-import do_an.traodoido.repository.ConversationRepository;
-import do_an.traodoido.repository.PostRepository;
-import do_an.traodoido.repository.TradeRepository;
-import do_an.traodoido.repository.UserRepository;
+import do_an.traodoido.repository.*;
 import do_an.traodoido.service.TradeService;
 import do_an.traodoido.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +29,7 @@ public class TradeServiceImpl implements TradeService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final UserService userService;
+    private final ReviewRepository reviewRepository;
     private final ConversationRepository conversationRepository;
     private final SimpMessageSendingOperations messagingTemplate;
 
@@ -54,15 +53,18 @@ public class TradeServiceImpl implements TradeService {
                 .build();
 
         conversationRepository.save(conversation);
+        ownerPost.setPostStatus(PostStatus.PENDING);
+        postRepository.save(ownerPost);
 
         TradeNotificationPayload payload = TradeNotificationPayload.builder()
                 .tradeId(trade.getId())
                 .requesterName(userRequester.getFullName())
                 .conversationId(conversation.getId())
+                .notifyContent(userRequester.getFullName()+" muốn trao đổi với bạn.")
                 .build();
 
         messagingTemplate.convertAndSendToUser(
-                String.valueOf(userOwner.getId()),
+                String.valueOf(userOwner.getUsername()),
                 "/queue/notification",
                 payload
         );
@@ -74,8 +76,19 @@ public class TradeServiceImpl implements TradeService {
 
     @Override
     public RestResponse<String> updateTradeStatus(Long tradeId) {
+        Long currentUserId = userService.getCurrentUserId();
         Trade trade = tradeRepository.findById(tradeId).orElseThrow(()->new InvalidException("Trade not found"));
         trade.setTradeStatus(trade.getTradeStatus().equals(TradeStatus.PENDING) ? TradeStatus.COMPLETED_PENDING : TradeStatus.COMPLETED);
+        if(trade.getUserStart()==null&&trade.getUserEnd()==null){
+            trade.setUserStart(currentUserId);
+        }
+        else if(trade.getUserStart()==null){
+            trade.setUserStart(currentUserId);
+
+        }
+        else {
+            trade.setUserEnd(currentUserId);
+        }
         tradeRepository.save(trade);
         return RestResponse.<String>builder()
                 .code(1000)
@@ -90,6 +103,8 @@ public class TradeServiceImpl implements TradeService {
 
         trade.setRequesterPost(requesterPost);
         tradeRepository.save(trade);
+        requesterPost.setPostStatus(PostStatus.PENDING);
+        postRepository.save(requesterPost);
         return RestResponse.<String>builder()
                 .code(1000)
                 .message("Success")
@@ -102,6 +117,7 @@ public class TradeServiceImpl implements TradeService {
         List<Trade> trades = tradeRepository.findByRequesterIdOrOwnerId(userId, userId);
         List<ResTradeDTO> data = trades.stream().map(trade -> {
             User partner= trade.getOwner().getId().equals(userId) ? trade.getRequester() : trade.getOwner();
+
             return ResTradeDTO.builder()
                     .tradeId(trade.getId())
                     .userId(partner.getId())
@@ -128,7 +144,9 @@ public class TradeServiceImpl implements TradeService {
                                     : null
                     )
                     .status(trade.getTradeStatus())
-                    .canRate(trade.getTradeStatus().equals(TradeStatus.COMPLETED))
+                    .reviewed(reviewRepository.existsByReviewerIdAndTradeId(userId, trade.getId()))
+                    .canRate(trade.getTradeStatus().equals(TradeStatus.COMPLETED)&& !reviewRepository.existsByReviewerIdAndTradeId(userId, trade.getId()))
+                    .canComplete(!tradeRepository.isParticipant(userId,trade.getId())&& trade.getTradeStatus()!=TradeStatus.COMPLETED)
                     .build();
         }).toList();
         return RestResponse.<List<ResTradeDTO>>builder()

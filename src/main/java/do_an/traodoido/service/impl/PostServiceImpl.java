@@ -139,6 +139,7 @@ public class PostServiceImpl implements PostService {
                 .totalComments(commentDTOs.size())
                 .totalLikes(post.getLikeCount())
                 .category(post.getCategory())
+                .isOwner(isOwner)
                 .canEdit(isOwner)
                 .canDelete(isOwner)
                 .canReport(!isOwner)
@@ -255,8 +256,8 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public RestPageResponse<List<ResPostDetailDTO>> searchPosts(String title, String categoryName, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
+    public RestPageResponse<List<ResPostDTO>> searchPosts(String title, String categoryName, int page, int size) {
+        Pageable pageable = PageRequest.of(page-1, size);
         String normalizedTitle = normalizeQueryParam(title);
         String normalizedCategoryName = normalizeQueryParam(categoryName);
 
@@ -271,18 +272,18 @@ public class PostServiceImpl implements PostService {
             );
         }
 
-        List<ResPostDetailDTO> resPostDTOs = postPage.getContent().stream()
+        List<ResPostDTO> resPostDTOs = postPage.getContent().stream()
                 .map(this::mapToResPostDTO)
                 .toList();
 
         MetaData metaData = MetaData.builder()
-                .page(postPage.getNumber())
+                .page(postPage.getNumber()+1)
                 .size(postPage.getSize())
                 .totalElements((int) postPage.getTotalElements())
                 .totalPages(postPage.getTotalPages())
                 .build();
 
-        return RestPageResponse.<List<ResPostDetailDTO>>builder()
+        return RestPageResponse.<List<ResPostDTO>>builder()
                 .code(1000)
                 .message("Posts retrieved successfully")
                 .data(resPostDTOs)
@@ -297,40 +298,14 @@ public class PostServiceImpl implements PostService {
         return value.trim();
     }
 
-    private ResPostDetailDTO mapToResPostDTO(Post post) {
-        List<String> imageUrls = post.getImages() != null
-                ? post.getImages().stream()
-                .map(Image::getImageUrl)
-                .collect(Collectors.toList())
-                : List.of();
-
-        List<CommentDTO> commentDTOs = post.getComments() != null
-                ? post.getComments().stream()
-                .map(comment -> CommentDTO.builder()
-                        .id(comment.getId())
-                        .userId(comment.getUser().getId())
-                        .fullName(comment.getUser().getFullName() != null
-                                ? comment.getUser().getFullName()
-                                : comment.getUser().getUsername())
-                        .content(comment.getContent())
-                        .commentDate(comment.getCommentDate())
-                        .build())
-                .toList()
-                : List.of();
-
-        return ResPostDetailDTO.builder()
+    private ResPostDTO mapToResPostDTO(Post post) {
+        return ResPostDTO.builder()
                 .id(post.getId())
-                .userId(post.getUser().getId())
-                .username(post.getUser().getUsername())
+                .username(post.getUser().getFullName())
                 .title(post.getTitle())
-                .description(post.getDescription())
-                .itemCondition(post.getItemCondition())
+                .totalLikes(post.getLikeCount())
                 .postDate(post.getPostDate())
-                .tradeLocation(post.getTradeLocation())
-                .postStatus(post.getPostStatus())
-                .imageUrls(imageUrls)
-                .comments(commentDTOs)
-                .totalComments(commentDTOs.size())
+                .imageUrl(post.getImages().stream().findFirst().map(Image::getImageUrl).orElse(null))
                 .category(post.getCategory())
                 .build();
     }

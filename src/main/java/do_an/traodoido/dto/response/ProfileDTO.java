@@ -24,6 +24,7 @@ public class ProfileDTO {
     private List<ResPostDTO> likedPosts;
 
     private boolean canSetting;
+    private boolean displayHistory;
     private boolean isFollowing;
     private boolean canFollow;
     private boolean canReport;

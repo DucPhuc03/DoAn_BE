@@ -88,13 +88,13 @@ public class PostController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<RestPageResponse<List<ResPostDetailDTO>>> searchPosts(
+    public ResponseEntity<RestPageResponse<List<ResPostDTO>>> searchPosts(
             @RequestParam(required = false) String title,
             @RequestParam(required = false) String categoryName,
-            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        RestPageResponse<List<ResPostDetailDTO>> response = postService.searchPosts(title, categoryName, page, size);
+        RestPageResponse<List<ResPostDTO>> response = postService.searchPosts(title, categoryName, page, size);
         return ResponseEntity.ok(response);
     }
 }

@@ -22,7 +22,7 @@ public interface PostService {
 
     List<ResPostDTO> getLikedPostsByUser(Long userId);
 
-    RestPageResponse<List<ResPostDetailDTO>> searchPosts(
+    RestPageResponse<List<ResPostDTO>> searchPosts(
             String title,
             String categoryName,
             int page,

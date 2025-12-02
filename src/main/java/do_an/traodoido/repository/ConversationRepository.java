@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface ConversationRepository extends JpaRepository<Conversation, Long> {
-    List<Conversation> findByParticipant1_IdOrParticipant2_Id(Long participant1Id, Long participant2Id);
+    List<Conversation> findByParticipant1_IdOrParticipant2_IdOrderByIdDesc(Long participant1Id, Long participant2Id);
 }

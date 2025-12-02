@@ -18,6 +18,7 @@ public class ResTradeDTO {
     private String ownerPostTitle;
     private String ownerPostImage;
     private TradeStatus status;
-
+    private boolean reviewed;
+    private boolean canComplete;
     private boolean canRate;
 }

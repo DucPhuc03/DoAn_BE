@@ -28,7 +28,7 @@ public class ConversationServiceImpl implements ConversationService  {
     public RestResponse<List<ResConversationDTO>> getConversationIds() {
         Long currentUserId = userService.getCurrentUserId();
         List<Conversation> conversations = conversationRepository
-                .findByParticipant1_IdOrParticipant2_Id(currentUserId, currentUserId);
+                .findByParticipant1_IdOrParticipant2_IdOrderByIdDesc(currentUserId, currentUserId);
 
         List<ResConversationDTO> data = conversations.stream()
                 .map(conversation -> ResConversationDTO.builder()

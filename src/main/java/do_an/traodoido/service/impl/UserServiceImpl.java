@@ -93,6 +93,7 @@ public class UserServiceImpl implements UserService {
                 .posts(userPosts)
                 .likedPosts(postService.getLikedPostsByUser(userId))
                 .canSetting(isOwnProfile)
+                .displayHistory(isOwnProfile)
                 .canEditAddress(true)
                 .canEditBio(true)
                 .canFollow(true)
