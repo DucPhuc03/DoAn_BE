@@ -1,6 +1,7 @@
 package do_an.traodoido.repository;
 
 import do_an.traodoido.entity.Post;
+import do_an.traodoido.enums.PostStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -25,4 +26,5 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             @Param("categoryName") String categoryName,
             Pageable pageable
     );
+    List<Post> findAllByPostStatus(PostStatus postStatus);
 }

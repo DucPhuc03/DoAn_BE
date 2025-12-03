@@ -14,6 +14,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -32,6 +34,7 @@ public class AuthService {
                 .id(user.getId())
                 .name(user.getFullName())
                 .email(user.getEmail())
+                .avatarUrl(user.getAvatarUrl())
                 .role(user.getRole())
                 .build();
         return LoginResponse.builder()
@@ -51,6 +54,7 @@ public class AuthService {
                 .email(registerRequest.getEmail())
                 .fullName(registerRequest.getFullName())
                 .password(passwordEncoder.encode(registerRequest.getPassword()))
+                .createdAt(LocalDate.now())
                 .role("USER")
                 .build();
         

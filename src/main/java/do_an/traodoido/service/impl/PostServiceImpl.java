@@ -51,7 +51,7 @@ public class PostServiceImpl implements PostService {
                     .itemCondition(createPostDTO.getItemCondition())
                     .postDate(createPostDTO.getPostDate() != null ? createPostDTO.getPostDate() : LocalDate.now())
                     .tradeLocation(createPostDTO.getTradeLocation())
-                    .postStatus(PostStatus.AVAILABLE)
+                    .postStatus(PostStatus.Waiting)
                     .category(category)
                     .user(user)
                     .build();
@@ -163,6 +163,7 @@ public class PostServiceImpl implements PostService {
                    .username(post.getUser().getUsername())
                    .title(post.getTitle())
                    .postDate(post.getPostDate())
+                    .postStatus(post.getPostStatus())
                    .imageUrl(post.getImages().stream().findFirst().map(Image::getImageUrl).orElse(null))
                    .category(post.getCategory())
                    .build();
@@ -256,6 +257,20 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    public RestResponse<List<ResPostDTO>> getPostsByAdmin() {
+        List<Post> posts = postRepository.findAllByPostStatus(PostStatus.Waiting);
+        List<ResPostDTO> resPostDTOs = posts.stream()
+                .map(this::mapToResPostDTO)
+                .toList();
+
+        return RestResponse.<List<ResPostDTO>>builder()
+                .code(1000)
+                .message("Posts retrieved successfully")
+                .data(resPostDTOs)
+                .build();
+    }
+
+    @Override
     public RestPageResponse<List<ResPostDTO>> searchPosts(String title, String categoryName, int page, int size) {
         Pageable pageable = PageRequest.of(page-1, size);
         String normalizedTitle = normalizeQueryParam(title);
@@ -303,6 +318,7 @@ public class PostServiceImpl implements PostService {
                 .id(post.getId())
                 .username(post.getUser().getFullName())
                 .title(post.getTitle())
+                .postStatus(post.getPostStatus())
                 .totalLikes(post.getLikeCount())
                 .postDate(post.getPostDate())
                 .imageUrl(post.getImages().stream().findFirst().map(Image::getImageUrl).orElse(null))

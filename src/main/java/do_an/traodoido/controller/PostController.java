@@ -52,7 +52,12 @@ public class PostController {
         RestResponse<List<ResPostDTO>> response = postService.getPostByUserId(userId);
         return ResponseEntity.ok(response);
     }
-    
+
+    @GetMapping("/admin")
+    public ResponseEntity<RestResponse<List<ResPostDTO>>> getPostsByAdmin() {
+        RestResponse<List<ResPostDTO>> response = postService.getPostsByAdmin();
+        return ResponseEntity.ok(response);
+    }
     @DeleteMapping("/{id}")
     public ResponseEntity<RestResponse<String>> deletePost(
             @PathVariable Long id,

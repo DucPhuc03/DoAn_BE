@@ -14,6 +14,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -45,9 +46,18 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(whitelistedEndpoints).permitAll()
                         .requestMatchers(HttpMethod.GET,"/api/category").permitAll()
+                        .requestMatchers(HttpMethod.GET,"/api/category/admin").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST,"/api/category/admin").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE,"/api/category/admin/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT,"/api/category/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/user/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/post/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
-                .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.decoder(jwtDecoder())));
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt
+                        .decoder(jwtDecoder())
+                        .jwtAuthenticationConverter(jwtAuthenticationConverter())
+                ));
 
         return http.build();
     }
@@ -66,6 +76,24 @@ public class WebSecurityConfig {
     public JwtDecoder jwtDecoder() {
         SecretKey key = new SecretKeySpec(secretKey.getBytes(), "HmacSHA256");
         return NimbusJwtDecoder.withSecretKey(key).build();
+    }
+
+    @Bean
+    public JwtAuthenticationConverter jwtAuthenticationConverter() {
+        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+        converter.setJwtGrantedAuthoritiesConverter(jwt -> {
+            Object userClaim = jwt.getClaim("user");
+            if (userClaim instanceof java.util.Map<?, ?> claimMap) {
+                Object role = claimMap.get("role");
+                if (role != null) {
+                    return java.util.List.of(
+                            new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + role.toString())
+                    );
+                }
+            }
+            return java.util.List.of();
+        });
+        return converter;
     }
 
     @Bean

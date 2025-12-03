@@ -1,5 +1,6 @@
 package do_an.traodoido.entity;
 
+import do_an.traodoido.enums.UserStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -8,6 +9,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -34,6 +36,9 @@ public class User implements UserDetails {
     private String bio;
     private String avatarUrl;
     private String role;
+    @Enumerated(EnumType.STRING)
+    private UserStatus status;
+    private LocalDate createdAt;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

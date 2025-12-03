@@ -1,5 +1,6 @@
 package do_an.traodoido.entity;
 
+import do_an.traodoido.enums.CategoryStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,4 +19,7 @@ public class Category {
     private Long id;
     private String name;
     private String image;
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private CategoryStatus status=CategoryStatus.ACTIVE;
 }

@@ -1,11 +1,9 @@
 package do_an.traodoido.service.impl;
 
 import do_an.traodoido.dto.request.UpdateProfileDTO;
-import do_an.traodoido.dto.response.ProfileDTO;
-import do_an.traodoido.dto.response.ResPostDTO;
-import do_an.traodoido.dto.response.ResPostDetailDTO;
-import do_an.traodoido.dto.response.RestResponse;
+import do_an.traodoido.dto.response.*;
 import do_an.traodoido.entity.User;
+import do_an.traodoido.enums.UserStatus;
 import do_an.traodoido.exception.InvalidException;
 import do_an.traodoido.exception.UnauthorizedAccessException;
 import do_an.traodoido.repository.UserRepository;
@@ -132,6 +130,40 @@ public class UserServiceImpl implements UserService {
                 .code(1000)
                 .message("Profile updated successfully")
                 .data("Profile updated")
+                .build();
+    }
+
+    @Override
+    public RestResponse<String> updateStatus(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new InvalidException("User", userId));
+        user.setStatus(user.getStatus() == UserStatus.ACTIVE ?
+                UserStatus.BANNED :UserStatus.ACTIVE);
+        userRepository.save(user);
+        return RestResponse.<String>builder()
+                .code(1000)
+                .message("User status updated successfully")
+                .data("User status updated")
+                .build();
+    }
+
+    @Override
+    public RestResponse<List<ResUserDTO>> getAllUsers() {
+        List<User> users = userRepository.findAll();
+        List<ResUserDTO> resUserDTOs = users.stream().map(user -> ResUserDTO.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .fullName(user.getFullName())
+                .avatarUrl(user.getAvatarUrl())
+                .email(user.getEmail())
+                .createdAt(user.getCreatedAt())
+                .phoneNumber(user.getPhoneNumber())
+                .role(user.getRole())
+                .status(user.getStatus())
+                .build()).toList();
+        return RestResponse.<List<ResUserDTO>>builder()
+                .code(1000)
+                .message("Users retrieved successfully")
+                .data(resUserDTOs)
                 .build();
     }
 }

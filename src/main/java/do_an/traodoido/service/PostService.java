@@ -22,6 +22,8 @@ public interface PostService {
 
     List<ResPostDTO> getLikedPostsByUser(Long userId);
 
+    RestResponse<List<ResPostDTO>> getPostsByAdmin();
+
     RestPageResponse<List<ResPostDTO>> searchPosts(
             String title,
             String categoryName,
