@@ -1,6 +1,7 @@
 package do_an.traodoido.repository;
 
 import do_an.traodoido.entity.Trade;
+import do_an.traodoido.enums.TradeStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,6 +14,16 @@ public interface TradeRepository  extends JpaRepository<Trade, Long> {
     List<Trade> findByRequesterIdOrOwnerId(Long requesterId, Long ownerId);
 
     boolean existsByUserEndOrUserStartAndId(Long userEnd, Long userStart, Long id);
+    @Query("""
+    SELECT COUNT(t)
+    FROM Trade t
+    WHERE (t.owner.id = :userId OR t.requester.id = :userId)
+      AND t.tradeStatus = :status
+""")
+    int countTradesOfUser(
+            @Param("userId") Long userId,
+            @Param("status") TradeStatus status
+    );
 
     @Query("""
     SELECT CASE WHEN COUNT(t) > 0 THEN TRUE ELSE FALSE END

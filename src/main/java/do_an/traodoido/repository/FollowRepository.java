@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.concurrent.Flow;
 
 @Repository
-public interface FollowRepository extends JpaRepository<Flow, Long> {
+public interface FollowRepository extends JpaRepository<Follow, Long> {
 
 
     @Query("SELECT COUNT(f) FROM Follow f WHERE f.following.id = :userId")

@@ -3,9 +3,11 @@ package do_an.traodoido.service.impl;
 import do_an.traodoido.dto.request.UpdateProfileDTO;
 import do_an.traodoido.dto.response.*;
 import do_an.traodoido.entity.User;
+import do_an.traodoido.enums.TradeStatus;
 import do_an.traodoido.enums.UserStatus;
 import do_an.traodoido.exception.InvalidException;
 import do_an.traodoido.exception.UnauthorizedAccessException;
+import do_an.traodoido.repository.TradeRepository;
 import do_an.traodoido.repository.UserRepository;
 import do_an.traodoido.service.LikeService;
 import do_an.traodoido.service.PostService;
@@ -27,6 +29,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PostService postService;
     private final S3Service s3Service;
+    private final TradeRepository tradeRepository;
     @Override
     public String getCurrentUsername() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -95,6 +98,7 @@ public class UserServiceImpl implements UserService {
                 .canEditAddress(true)
                 .canEditBio(true)
                 .canFollow(true)
+                .trades(tradeRepository.countTradesOfUser(userId, TradeStatus.COMPLETED))
                 .build();
 
         return RestResponse.<ProfileDTO>builder()
