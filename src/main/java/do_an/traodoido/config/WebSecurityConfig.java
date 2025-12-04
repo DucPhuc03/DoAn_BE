@@ -46,6 +46,7 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(whitelistedEndpoints).permitAll()
                         .requestMatchers(HttpMethod.GET,"/api/category").permitAll()
+                        .requestMatchers(HttpMethod.GET,"/api/geocode").permitAll()
                         .requestMatchers(HttpMethod.GET,"/api/category/admin").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST,"/api/category/admin").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE,"/api/category/admin/**").hasRole("ADMIN")

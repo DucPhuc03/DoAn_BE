@@ -60,18 +60,12 @@ public class PostController {
     }
     @DeleteMapping("/{id}")
     public ResponseEntity<RestResponse<String>> deletePost(
-            @PathVariable Long id,
-            @RequestHeader("Authorization") String authorizationHeader) {
+            @PathVariable Long id
+            ) {
         
-        // Extract token from "Bearer <token>"
-        String token = authorizationHeader.substring(7);
-        
-        // Extract user ID from token
-        Long userId = jwtService.extractUserId(token);
-        if (userId == null) {
-            throw new RuntimeException("Invalid token");
-        }
-        RestResponse<String> response = postService.deletePost(id, userId);
+
+
+        RestResponse<String> response = postService.deletePost(id);
         return ResponseEntity.ok(response);
     }
 

@@ -16,15 +16,20 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findByUserId(Long userId);
 
     @Query("""
-            SELECT p FROM Post p 
-            LEFT JOIN p.category c
-            WHERE (:title IS NULL OR LOWER(p.title) LIKE LOWER(CONCAT('%', :title, '%')))
-              AND (:categoryName IS NULL OR LOWER(c.name) LIKE LOWER(CONCAT('%', :categoryName, '%')))
-            """)
+        SELECT p FROM Post p 
+        LEFT JOIN p.category c
+        WHERE (:title IS NULL OR LOWER(p.title) LIKE LOWER(CONCAT('%', :title, '%')))
+          AND (:categoryName IS NULL OR LOWER(c.name) LIKE LOWER(CONCAT('%', :categoryName, '%')))
+          AND p.postStatus NOT IN (:excludedStatus)
+        """)
     Page<Post> searchPostsByTitleAndCategory(
             @Param("title") String title,
             @Param("categoryName") String categoryName,
+            @Param("excludedStatus") List<PostStatus> excludedStatus,
             Pageable pageable
     );
+
+    Page<Post> findByPostStatusNotIn(List<PostStatus> excludedStatus, Pageable pageable);
+
     List<Post> findAllByPostStatus(PostStatus postStatus);
 }

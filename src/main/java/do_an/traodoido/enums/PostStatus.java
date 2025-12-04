@@ -1,10 +1,11 @@
 package do_an.traodoido.enums;
 
 public enum PostStatus {
-    Waiting,
-    Approval,
+    WAITING,
+    APPROVAL,
     AVAILABLE,
     PENDING,
-    COMPLETED
+    COMPLETED,
+    DELETED
 
 }

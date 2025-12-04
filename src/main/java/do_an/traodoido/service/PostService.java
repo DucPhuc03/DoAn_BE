@@ -13,7 +13,7 @@ import java.util.List;
 
 public interface PostService {
     RestResponse<String> createPost(CreatePostDTO createPostDTO, MultipartFile[] images) throws IOException;
-    RestResponse<String> deletePost(Long postId, Long userId);
+    RestResponse<String> deletePost(Long postId);
     RestResponse<ResPostDetailDTO> getPostDetails(Long postId);
     RestResponse<List<ResPostDTO>> getPostByUserId(Long userId);
     RestResponse<String> updatePost(CreatePostDTO createPostDTO, MultipartFile[] images, Long postId) throws IOException;

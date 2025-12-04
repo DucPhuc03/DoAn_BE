@@ -51,7 +51,7 @@ public class PostServiceImpl implements PostService {
                     .itemCondition(createPostDTO.getItemCondition())
                     .postDate(createPostDTO.getPostDate() != null ? createPostDTO.getPostDate() : LocalDate.now())
                     .tradeLocation(createPostDTO.getTradeLocation())
-                    .postStatus(PostStatus.Waiting)
+                    .postStatus(PostStatus.WAITING)
                     .category(category)
                     .user(user)
                     .build();
@@ -72,18 +72,22 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public RestResponse<String> deletePost(Long postId, Long userId) {
+    public RestResponse<String> deletePost(Long postId) {
+        User currentUser = resolveCurrentUser();
         // Tìm post theo ID
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new InvalidException("Post", postId));
-        
+
         // Kiểm tra quyền xóa - chỉ owner mới được xóa
-        if (!post.getUser().getId().equals(userId)) {
+        if ( currentUser.getRole().equals("ADMIN")) {
+            postRepository.delete(post);
+        }
+        else if (!post.getUser().getId().equals(currentUser.getId())) {
             throw new UnauthorizedAccessException("You don't have permission to delete this post");
         }
-        
         // Xóa post (cascade sẽ xóa luôn images)
-        postRepository.delete(post);
+        post.setPostStatus(PostStatus.DELETED);
+        postRepository.save(post);
         
         return RestResponse.<String>builder()
                 .code(1000)
@@ -258,7 +262,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public RestResponse<List<ResPostDTO>> getPostsByAdmin() {
-        List<Post> posts = postRepository.findAllByPostStatus(PostStatus.Waiting);
+        List<Post> posts = postRepository.findAllByPostStatus(PostStatus.WAITING);
         List<ResPostDTO> resPostDTOs = posts.stream()
                 .map(this::mapToResPostDTO)
                 .toList();
@@ -278,11 +282,12 @@ public class PostServiceImpl implements PostService {
 
         Page<Post> postPage;
         if (normalizedTitle == null && normalizedCategoryName == null) {
-            postPage = postRepository.findAll(pageable);
+            postPage = postRepository.findByPostStatusNotIn(List.of(PostStatus.WAITING, PostStatus.COMPLETED),pageable);
         } else {
             postPage = postRepository.searchPostsByTitleAndCategory(
                     normalizedTitle,
                     normalizedCategoryName,
+                    List.of(PostStatus.WAITING, PostStatus.COMPLETED),
                     pageable
             );
         }
