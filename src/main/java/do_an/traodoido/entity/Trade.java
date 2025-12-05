@@ -1,6 +1,7 @@
 package do_an.traodoido.entity;
 
 import do_an.traodoido.enums.TradeStatus;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,6 +20,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "trades")
+@Schema(description = "Giao dịch trao đổi đồ")
 public class Trade {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -1,6 +1,7 @@
 package do_an.traodoido.entity;
 
 import do_an.traodoido.enums.CategoryStatus;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,6 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "category")
+@Schema(description = "Danh mục sản phẩm")
 public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

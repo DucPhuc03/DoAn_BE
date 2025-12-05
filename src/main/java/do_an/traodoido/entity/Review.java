@@ -1,5 +1,6 @@
 package do_an.traodoido.entity;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -18,6 +19,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "reviews")
+@Schema(description = "Đánh giá người dùng")
 public class Review {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

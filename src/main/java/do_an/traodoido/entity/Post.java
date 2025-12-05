@@ -1,6 +1,7 @@
 package do_an.traodoido.entity;
 
 import do_an.traodoido.enums.PostStatus;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,6 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "posts")
+@Schema(description = "Bài đăng trao đổi đồ")
 public class Post {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -1,5 +1,6 @@
 package do_an.traodoido.entity;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -12,6 +13,7 @@ import java.time.LocalDate;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(description = "Bình luận trên bài đăng")
 public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

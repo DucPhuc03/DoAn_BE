@@ -10,6 +10,9 @@ import do_an.traodoido.dto.response.RestResponse;
 import do_an.traodoido.service.JwtService;
 import do_an.traodoido.service.PostService;
 import do_an.traodoido.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +28,8 @@ import java.util.List;
 @RequestMapping("/api/post")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Post", description = "API quản lý bài đăng trao đổi đồ")
+@SecurityRequirement(name = "Bearer Authentication")
 public class PostController {
     
     private final PostService postService;
@@ -32,6 +37,7 @@ public class PostController {
     private final UserService userService;
     private final ObjectMapper objectMapper = new ObjectMapper();
     
+    @Operation(summary = "Tạo bài đăng mới", description = "Tạo một bài đăng trao đổi đồ mới với hình ảnh. Yêu cầu xác thực.")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<RestResponse<String>> createPost(
             @RequestPart("images") MultipartFile[] images,
@@ -42,26 +48,28 @@ public class PostController {
         return ResponseEntity.ok(response);
     }
     
+    @Operation(summary = "Lấy chi tiết bài đăng", description = "Lấy thông tin chi tiết của một bài đăng theo ID. Yêu cầu xác thực.")
     @GetMapping("/{id}")
     public ResponseEntity<RestResponse<ResPostDetailDTO>> getPostDetails(@PathVariable Long id) {
         RestResponse<ResPostDetailDTO> response = postService.getPostDetails(id);
         return ResponseEntity.ok(response);
     }
+    @Operation(summary = "Lấy danh sách bài đăng theo người dùng", description = "Lấy tất cả bài đăng của một người dùng cụ thể. Yêu cầu xác thực.")
     @GetMapping("/user/{userId}")
     public ResponseEntity<RestResponse<List<ResPostDTO>>> getPostsByUserId(@PathVariable Long userId) {
         RestResponse<List<ResPostDTO>> response = postService.getPostByUserId(userId);
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "Lấy tất cả bài đăng (Admin)", description = "Lấy danh sách tất cả bài đăng trong hệ thống. Chỉ dành cho Admin.")
     @GetMapping("/admin")
     public ResponseEntity<RestResponse<List<ResPostDTO>>> getPostsByAdmin() {
         RestResponse<List<ResPostDTO>> response = postService.getPostsByAdmin();
         return ResponseEntity.ok(response);
     }
+    @Operation(summary = "Xóa bài đăng", description = "Xóa một bài đăng theo ID. Chỉ chủ sở hữu bài đăng mới có thể xóa. Yêu cầu xác thực.")
     @DeleteMapping("/{id}")
-    public ResponseEntity<RestResponse<String>> deletePost(
-            @PathVariable Long id
-            ) {
+    public ResponseEntity<RestResponse<String>> deletePost(@PathVariable Long id) {
         
 
 
@@ -69,6 +77,7 @@ public class PostController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "Cập nhật bài đăng", description = "Cập nhật thông tin bài đăng. Hình ảnh là tùy chọn. Chỉ chủ sở hữu mới có thể cập nhật. Yêu cầu xác thực.")
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<RestResponse<String>> updatePost(
             @PathVariable Long id,
@@ -80,12 +89,14 @@ public class PostController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "Thay đổi trạng thái bài đăng", description = "Thay đổi trạng thái của bài đăng (ví dụ: ACTIVE, INACTIVE). Yêu cầu xác thực.")
     @PostMapping("/status")
     public ResponseEntity<RestResponse<String>> changePostStatus(@RequestBody UpdateStatusPost updateStatusPost) {
         RestResponse<String> response = postService.changePostStatus(updateStatusPost);
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "Tìm kiếm bài đăng", description = "Tìm kiếm bài đăng theo tiêu đề và/hoặc tên danh mục. Hỗ trợ phân trang. Yêu cầu xác thực.")
     @GetMapping("/search")
     public ResponseEntity<RestPageResponse<List<ResPostDTO>>> searchPosts(
             @RequestParam(required = false) String title,

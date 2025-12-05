@@ -1,6 +1,7 @@
 package do_an.traodoido.entity;
 
 import do_an.traodoido.enums.MeetingStatus;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,6 +16,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "meetings")
+@Schema(description = "Cuộc hẹn trao đổi đồ")
 public class Meeting {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

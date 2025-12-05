@@ -10,6 +10,9 @@ import do_an.traodoido.repository.ConversationRepository;
 import do_an.traodoido.repository.MessageRepository;
 import do_an.traodoido.repository.UserRepository;
 import do_an.traodoido.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -26,6 +29,8 @@ import java.time.LocalDateTime;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Chat", description = "API quản lý tin nhắn chat (hỗ trợ cả WebSocket và REST)")
+@SecurityRequirement(name = "Bearer Authentication")
 public class ChatController {
     private final UserService userService;
     private final ConversationRepository conversationRepository;
@@ -63,6 +68,7 @@ public class ChatController {
                 .build();
     }
 
+    @Operation(summary = "Gửi tin nhắn (REST API)", description = "Gửi một tin nhắn trong cuộc trò chuyện thông qua REST API. Yêu cầu xác thực. Lưu ý: Ứng dụng cũng hỗ trợ WebSocket tại endpoint /chat.sendMessage/{conversationId}")
     @PostMapping("/api/chat/{conversationId}/messages")
     public ResMessageDTO sendMessageRest(
             @PathVariable Long conversationId,

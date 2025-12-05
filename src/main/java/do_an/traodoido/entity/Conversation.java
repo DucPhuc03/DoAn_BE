@@ -1,5 +1,6 @@
 package do_an.traodoido.entity;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -12,6 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "conversations")
+@Schema(description = "Cuộc trò chuyện giữa hai người dùng")
 public class Conversation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
