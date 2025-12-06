@@ -7,7 +7,7 @@ import do_an.traodoido.dto.response.ResPostDTO;
 import do_an.traodoido.dto.response.ResPostDetailDTO;
 import do_an.traodoido.dto.response.RestPageResponse;
 import do_an.traodoido.dto.response.RestResponse;
-import do_an.traodoido.service.JwtService;
+import do_an.traodoido.util.JwtService;
 import do_an.traodoido.service.PostService;
 import do_an.traodoido.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;

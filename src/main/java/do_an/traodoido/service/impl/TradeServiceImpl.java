@@ -18,6 +18,7 @@ import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -32,6 +33,7 @@ public class TradeServiceImpl implements TradeService {
     private final ReviewRepository reviewRepository;
     private final ConversationRepository conversationRepository;
     private final SimpMessageSendingOperations messagingTemplate;
+    private final AnnouncementRepository announcementRepository;
 
     public RestResponse<String> createTrade(CreateTradeDTO createTradeDTO){
         User userRequester = userService.getCurrentUser();
@@ -62,12 +64,28 @@ public class TradeServiceImpl implements TradeService {
                 .conversationId(conversation.getId())
                 .notifyContent(userRequester.getFullName()+" muốn trao đổi với bạn.")
                 .build();
-
+        announcementRepository.save(Announcement.builder()
+                .user(userOwner)
+                .title("Bạn có một yêu cầu trao đổi mới")
+                .type("exchange")
+                .message(userRequester.getFullName() + " muốn trao đổi với bạn.")
+                .time(LocalDate.now())
+                .isRead(false)
+                .link("/chat")
+                .build());
         messagingTemplate.convertAndSendToUser(
                 String.valueOf(userOwner.getUsername()),
                 "/queue/notification",
                 payload
         );
+
+        Announcement announcement = Announcement.builder()
+                .user(userOwner)
+                .title("Bạn có một yêu cầu trao đổi mới")
+                .message(userRequester.getFullName() + " muốn trao đổi với bạn.")
+                .time(LocalDate.now())
+                .isRead(false)
+                .build();
         return RestResponse.<String>builder()
                 .code(1000)
                 .message("Success")
@@ -81,13 +99,39 @@ public class TradeServiceImpl implements TradeService {
         trade.setTradeStatus(trade.getTradeStatus().equals(TradeStatus.PENDING) ? TradeStatus.COMPLETED_PENDING : TradeStatus.COMPLETED);
         if(trade.getUserStart()==null&&trade.getUserEnd()==null){
             trade.setUserStart(currentUserId);
+            announcementRepository.save(Announcement.builder()
+                    .user(userRepository.findById(trade.getUserEnd()).orElseThrow())
+                    .title("Bạn có một yêu cầu trao đổi mới")
+                    .type("exchange")
+                    .message(userRepository.findById(trade.getUserEnd()).get().getFullName() + " đã hoàn thành trao đổi.")
+                    .time(LocalDate.now())
+                    .isRead(false)
+                    .link("/chat")
+                    .build());
         }
         else if(trade.getUserStart()==null){
             trade.setUserStart(currentUserId);
-
+            announcementRepository.save(Announcement.builder()
+                    .user(userRepository.findById(trade.getUserEnd()).orElseThrow())
+                    .title("Bạn có một yêu cầu trao đổi mới")
+                    .type("exchange")
+                    .message(userRepository.findById(trade.getUserEnd()).get().getFullName() + " đã hoàn thành trao đổi.")
+                    .time(LocalDate.now())
+                    .isRead(false)
+                    .link("/chat")
+                    .build());
         }
         else {
             trade.setUserEnd(currentUserId);
+            announcementRepository.save(Announcement.builder()
+                    .user(userRepository.findById(trade.getUserStart()).orElseThrow())
+                    .title("Bạn có một yêu cầu trao đổi mới")
+                    .type("exchange")
+                    .message(userRepository.findById(trade.getUserStart()).get().getFullName() + " đã hoàn thành trao đổi.")
+                    .time(LocalDate.now())
+                    .isRead(false)
+                    .link("/chat")
+                    .build());
         }
         tradeRepository.save(trade);
         return RestResponse.<String>builder()

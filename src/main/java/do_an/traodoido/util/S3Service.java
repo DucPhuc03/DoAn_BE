@@ -1,4 +1,4 @@
-package do_an.traodoido.service;
+package do_an.traodoido.util;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;

@@ -4,7 +4,7 @@ import do_an.traodoido.dto.request.LoginRequest;
 import do_an.traodoido.dto.request.RegisterRequest;
 import do_an.traodoido.dto.response.LoginResponse;
 import do_an.traodoido.dto.response.RestResponse;
-import do_an.traodoido.service.AuthService;
+import do_an.traodoido.util.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;

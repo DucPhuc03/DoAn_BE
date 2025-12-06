@@ -2,10 +2,12 @@ package do_an.traodoido.service.impl;
 
 import do_an.traodoido.dto.request.CreateCommentDTO;
 import do_an.traodoido.dto.response.RestResponse;
+import do_an.traodoido.entity.Announcement;
 import do_an.traodoido.entity.Comment;
 import do_an.traodoido.entity.Post;
 import do_an.traodoido.entity.User;
 import do_an.traodoido.exception.InvalidException;
+import do_an.traodoido.repository.AnnouncementRepository;
 import do_an.traodoido.repository.CommentRepository;
 import do_an.traodoido.repository.PostRepository;
 import do_an.traodoido.repository.UserRepository;
@@ -22,6 +24,7 @@ public class CommentServiceImpl implements CommentService {
     private  final PostRepository postRepository;
     private final UserService userService;
     private final CommentRepository commentRepository;
+    private final AnnouncementRepository announcementRepository;
     @Override
     public RestResponse<String> createComment(CreateCommentDTO createCommentDTO) {
         Post post = postRepository.findById(createCommentDTO.getPostId()).orElseThrow(()->new InvalidException("Post not found with id: " + createCommentDTO.getPostId()));
@@ -34,6 +37,15 @@ public class CommentServiceImpl implements CommentService {
                 .commentDate(LocalDate.now())
                 .build();
         commentRepository.save(comment);
+        announcementRepository.save(Announcement.builder()
+                .user(post.getUser())
+                .title("Bình luận mới")
+                .type("comment")
+                .message(user.getFullName() + " đã bình luận bài đăng của bạn.")
+                .time(LocalDate.now())
+                .isRead(false)
+                .link("/post/" + post.getId())
+                .build());
         return RestResponse.<String>builder()
                 .code(1000)
                 .message("Success")

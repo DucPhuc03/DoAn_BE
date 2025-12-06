@@ -1,4 +1,4 @@
-package do_an.traodoido.service;
+package do_an.traodoido.util;
 
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;

@@ -13,7 +13,7 @@ import java.util.List;
 
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
-    List<Post> findByUserId(Long userId);
+    List<Post> findByUserIdAndPostStatusIsNot(Long userId, PostStatus excludedStatus);
 
     @Query("""
         SELECT p FROM Post p 

@@ -9,13 +9,16 @@ import do_an.traodoido.exception.InvalidException;
 import do_an.traodoido.exception.UnauthorizedAccessException;
 import do_an.traodoido.repository.*;
 import do_an.traodoido.service.PostService;
-import do_an.traodoido.service.S3Service;
- 
+import do_an.traodoido.util.S3Service;
+
+import do_an.traodoido.util.VisionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -35,6 +38,7 @@ public class PostServiceImpl implements PostService {
     private final S3Service s3Service;
     private final ImageRepository imageRepository;
     private final LikeRepository likeRepository;
+    private final VisionService visionService;
     
     @Override
     public RestResponse<String> createPost(CreatePostDTO createPostDTO, MultipartFile[] images) throws IOException {
@@ -64,6 +68,12 @@ public class PostServiceImpl implements PostService {
                             .build())
                     .toList();
             imageRepository.saveAll(imageEntities);
+
+            String predictedCategory = visionService.detectLabels(images[0].getBytes());
+            if(predictedCategory.equals(category.getName())) {
+                post.setPostStatus(PostStatus.AVAILABLE);
+                postRepository.save(post);
+            }
             return RestResponse.<String>builder()
                     .code(1000)
                     .message("Post created successfully")
@@ -160,7 +170,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public RestResponse<List<ResPostDTO>> getPostByUserId(Long userId) {
-        List<Post> posts = postRepository.findByUserId(userId);
+        List<Post> posts = postRepository.findByUserIdAndPostStatusIsNot(userId, PostStatus.DELETED);
         List<ResPostDTO> resPostDTOs = posts.stream().map(post -> {
             return ResPostDTO.builder()
                    .id(post.getId())
@@ -282,7 +292,7 @@ public class PostServiceImpl implements PostService {
 
         Page<Post> postPage;
         if (normalizedTitle == null && normalizedCategoryName == null) {
-            postPage = postRepository.findByPostStatusNotIn(List.of(PostStatus.WAITING, PostStatus.COMPLETED),pageable);
+            postPage = postRepository.findByPostStatusNotIn(List.of(PostStatus.WAITING, PostStatus.COMPLETED,PostStatus.DELETED),pageable);
         } else {
             postPage = postRepository.searchPostsByTitleAndCategory(
                     normalizedTitle,
@@ -332,7 +342,7 @@ public class PostServiceImpl implements PostService {
     }
 
     private User resolveCurrentUser() {
-        org.springframework.security.core.Authentication authentication = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new UnauthorizedAccessException("User is not authenticated");
         }

@@ -2,16 +2,19 @@ package do_an.traodoido.service.impl;
 
 import do_an.traodoido.dto.request.UpdateProfileDTO;
 import do_an.traodoido.dto.response.*;
+import do_an.traodoido.entity.Follow;
 import do_an.traodoido.entity.User;
+import do_an.traodoido.enums.FollowStatus;
 import do_an.traodoido.enums.TradeStatus;
 import do_an.traodoido.enums.UserStatus;
 import do_an.traodoido.exception.InvalidException;
 import do_an.traodoido.exception.UnauthorizedAccessException;
+import do_an.traodoido.repository.FollowRepository;
 import do_an.traodoido.repository.TradeRepository;
 import do_an.traodoido.repository.UserRepository;
-import do_an.traodoido.service.LikeService;
+import do_an.traodoido.service.FollowService;
 import do_an.traodoido.service.PostService;
-import do_an.traodoido.service.S3Service;
+import do_an.traodoido.util.S3Service;
 import do_an.traodoido.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -30,6 +33,8 @@ public class UserServiceImpl implements UserService {
     private final PostService postService;
     private final S3Service s3Service;
     private final TradeRepository tradeRepository;
+    private final FollowService followService;
+    private final FollowRepository followRepository;
     @Override
     public String getCurrentUsername() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -78,8 +83,25 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public RestResponse<ProfileDTO> getProfile(Long userId) {
+        FollowStatus followStatus;
+        Follow follower= followRepository.findByFollowerIdAndFollowingId(getCurrentUserId(), userId);
+        Follow following= followRepository.findByFollowerIdAndFollowingId(userId, getCurrentUserId());
         User currentUser = getCurrentUser();
         boolean isOwnProfile = currentUser.getId().equals(userId);
+        if(!isOwnProfile){
+            if(follower !=null && following !=null){
+                followStatus = FollowStatus.FOLLOWING;
+            } else if(follower !=null){
+                followStatus = FollowStatus.FOLLOWING;
+            } else if(following != null){
+                followStatus = FollowStatus.FOLLOW_BACK;
+            } else {
+                followStatus = FollowStatus.NOT_FOLLOWING;
+            }
+
+        } else {
+            followStatus = FollowStatus.SELF;
+        }
         User user = userRepository.findById(userId).orElseThrow(() -> new InvalidException("User", userId));
         List<ResPostDTO> userPosts = postService.getPostByUserId(userId).getData();
         ProfileDTO profileDTO = ProfileDTO.builder()
@@ -93,11 +115,14 @@ public class UserServiceImpl implements UserService {
                 .avatarUrl(user.getAvatarUrl())
                 .posts(userPosts)
                 .likedPosts(postService.getLikedPostsByUser(userId))
+                .followers(followService.getFollowers(userId))
+                .following(followService.getFollowing(userId))
                 .canSetting(isOwnProfile)
+                .followStatus(followStatus)
                 .displayHistory(isOwnProfile)
                 .canEditAddress(true)
                 .canEditBio(true)
-                .canFollow(true)
+
                 .trades(tradeRepository.countTradesOfUser(userId, TradeStatus.COMPLETED))
                 .build();
 

@@ -1,5 +1,6 @@
 package do_an.traodoido.dto.response;
 
+import do_an.traodoido.enums.FollowStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,11 +23,11 @@ public class ProfileDTO {
     private String address;
     private List<ResPostDTO> posts;
     private List<ResPostDTO> likedPosts;
-
+    List<ResFollowDTO> followers;
+    List<ResFollowDTO> following;
     private boolean canSetting;
     private boolean displayHistory;
-    private boolean isFollowing;
-    private boolean canFollow;
+    private FollowStatus followStatus;
     private boolean canReport;
     private boolean canEditAddress;
     private boolean canEditBio;

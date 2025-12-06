@@ -3,11 +3,9 @@ package do_an.traodoido.service.impl;
 import do_an.traodoido.dto.request.CreateLikeDTO;
 import do_an.traodoido.dto.response.ResPostDTO;
 import do_an.traodoido.dto.response.RestResponse;
-import do_an.traodoido.entity.Image;
-import do_an.traodoido.entity.Like;
-import do_an.traodoido.entity.Post;
-import do_an.traodoido.entity.User;
+import do_an.traodoido.entity.*;
 import do_an.traodoido.exception.InvalidException;
+import do_an.traodoido.repository.AnnouncementRepository;
 import do_an.traodoido.repository.LikeRepository;
 import do_an.traodoido.repository.PostRepository;
 import do_an.traodoido.service.LikeService;
@@ -15,6 +13,7 @@ import do_an.traodoido.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,6 +23,7 @@ public class LikeServiceImpl implements LikeService {
     private final LikeRepository likeRepository;
     private final PostRepository postRepository;
     private final UserService userService;
+    private final AnnouncementRepository announcementRepository;
 
     @Override
     public RestResponse<String> likePost(Long postId) {
@@ -36,6 +36,7 @@ public class LikeServiceImpl implements LikeService {
             likeRepository.delete(existingLike.get());
             post.setLikeCount(post.getLikeCount() - 1);
             postRepository.save(post);
+
         }
         else {
             // Like: tạo like mới và tăng likeCount
@@ -46,6 +47,15 @@ public class LikeServiceImpl implements LikeService {
             likeRepository.save(like);
             post.setLikeCount(post.getLikeCount() + 1);
             postRepository.save(post);
+            announcementRepository.save(Announcement.builder()
+                    .user(post.getUser())
+                    .title("Yêu thích bài đăng")
+                    .type("like")
+                    .message(currentUser.getFullName() + " đã thích bài đăng của bạn.")
+                    .time(LocalDate.now())
+                    .isRead(false)
+                    .link("/post/" + post.getId())
+                    .build());
         }
 
         return RestResponse.<String>builder()

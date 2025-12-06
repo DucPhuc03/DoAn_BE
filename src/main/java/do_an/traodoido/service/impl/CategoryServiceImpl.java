@@ -5,7 +5,7 @@ import do_an.traodoido.entity.Category;
 import do_an.traodoido.enums.CategoryStatus;
 import do_an.traodoido.repository.CategoryRepository;
 import do_an.traodoido.service.CategoryService;
-import do_an.traodoido.service.S3Service;
+import do_an.traodoido.util.S3Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;

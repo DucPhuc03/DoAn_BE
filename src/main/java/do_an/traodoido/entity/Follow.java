@@ -2,6 +2,7 @@ package do_an.traodoido.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.context.annotation.Description;
 
 @Entity
 @Table(name = "follows")
@@ -10,6 +11,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 @NoArgsConstructor
+@Description("Mối quan hệ theo dõi giữa người dùng")
 public class Follow {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

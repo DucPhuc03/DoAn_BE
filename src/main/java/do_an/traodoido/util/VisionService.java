@@ -1,8 +1,9 @@
-package do_an.traodoido.service;
+package do_an.traodoido.util;
 
 import com.google.cloud.vision.v1.*;
 import com.google.protobuf.ByteString;
 import do_an.traodoido.dto.response.LabelDTO;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -10,9 +11,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class VisionService {
-
-    public List<LabelDTO> detectLabels(byte[] imageBytes) throws IOException {
+    private final CategoryMapper categoryMapper;
+    public String detectLabels(byte[] imageBytes) throws IOException {
 
         List<LabelDTO> results = new ArrayList<>();
 
@@ -45,7 +47,8 @@ public class VisionService {
             );
         }
 
-        return results;
+
+        return categoryMapper.aggregateCategory(results);
     }
 }
 

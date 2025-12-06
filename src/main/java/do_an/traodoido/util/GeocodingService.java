@@ -1,4 +1,4 @@
-package do_an.traodoido.service;
+package do_an.traodoido.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

@@ -2,7 +2,7 @@ package do_an.traodoido.controller;
 
 import do_an.traodoido.dto.response.GeocodeLocationResponse;
 import do_an.traodoido.dto.response.RestResponse;
-import do_an.traodoido.service.GeocodingService;
+import do_an.traodoido.util.GeocodingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;

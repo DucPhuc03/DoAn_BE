@@ -1,4 +1,4 @@
-package do_an.traodoido.service;
+package do_an.traodoido.util;
 
 import do_an.traodoido.dto.request.LoginRequest;
 import do_an.traodoido.dto.request.RegisterRequest;
@@ -8,6 +8,7 @@ import do_an.traodoido.dto.response.UserLogin;
 import do_an.traodoido.entity.User;
 import do_an.traodoido.exception.UsernameAlreadyExistsException;
 import do_an.traodoido.repository.UserRepository;
+import do_an.traodoido.util.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

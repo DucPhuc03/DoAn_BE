@@ -1,6 +1,6 @@
 package do_an.traodoido.controller;
 
-import do_an.traodoido.service.S3Service;
+import do_an.traodoido.util.S3Service;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
