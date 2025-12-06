@@ -37,7 +37,8 @@ public class WebSecurityConfig {
             "/ws/**",
             "/v3/api-docs/**",
             "/swagger-ui/**",
-            "/swagger-ui.html"
+            "/swagger-ui.html",
+            "/api/vision/**"
     };
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -53,6 +54,7 @@ public class WebSecurityConfig {
                         .requestMatchers(HttpMethod.PUT,"/api/category/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/user/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/post/admin/**").hasRole("ADMIN")
+
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt
