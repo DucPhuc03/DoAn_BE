@@ -9,6 +9,7 @@ import do_an.traodoido.exception.InvalidException;
 import do_an.traodoido.exception.UnauthorizedAccessException;
 import do_an.traodoido.repository.*;
 import do_an.traodoido.service.PostService;
+import do_an.traodoido.util.GeocodingService;
 import do_an.traodoido.util.S3Service;
 
 import do_an.traodoido.util.VisionService;
@@ -39,6 +40,7 @@ public class PostServiceImpl implements PostService {
     private final ImageRepository imageRepository;
     private final LikeRepository likeRepository;
     private final VisionService visionService;
+    private final GeocodingService geocodingService;
     
     @Override
     public RestResponse<String> createPost(CreatePostDTO createPostDTO, MultipartFile[] images) throws IOException {
@@ -170,7 +172,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public RestResponse<List<ResPostDTO>> getPostByUserId(Long userId) {
-        List<Post> posts = postRepository.findByUserIdAndPostStatusIsNot(userId, PostStatus.DELETED);
+        List<Post> posts = postRepository.findByUserIdAndPostStatusNotIn(userId, List.of(PostStatus.DELETED, PostStatus.COMPLETED));
         List<ResPostDTO> resPostDTOs = posts.stream().map(post -> {
             return ResPostDTO.builder()
                    .id(post.getId())
@@ -208,6 +210,8 @@ public class PostServiceImpl implements PostService {
         post.setItemCondition(createPostDTO.getItemCondition());
         post.setPostDate(createPostDTO.getPostDate() != null ? createPostDTO.getPostDate() : post.getPostDate());
         post.setTradeLocation(createPostDTO.getTradeLocation());
+        post.setLatitude(createPostDTO.getLatitude());
+        post.setLongitude(createPostDTO.getLongitude());
         post.setCategory(category);
 
         postRepository.save(post);
@@ -286,6 +290,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public RestPageResponse<List<ResPostDTO>> searchPosts(String title, String categoryName, int page, int size) {
+        User currentUser = resolveCurrentUser();
         Pageable pageable = PageRequest.of(page-1, size);
         String normalizedTitle = normalizeQueryParam(title);
         String normalizedCategoryName = normalizeQueryParam(categoryName);
@@ -297,14 +302,38 @@ public class PostServiceImpl implements PostService {
             postPage = postRepository.searchPostsByTitleAndCategory(
                     normalizedTitle,
                     normalizedCategoryName,
-                    List.of(PostStatus.WAITING, PostStatus.COMPLETED),
+                    List.of(PostStatus.WAITING, PostStatus.COMPLETED,PostStatus.DELETED),
                     pageable
             );
         }
 
         List<ResPostDTO> resPostDTOs = postPage.getContent().stream()
-                .map(this::mapToResPostDTO)
+                .map(post -> {
+
+                    double distance = geocodingService.calculateDistance(
+                            currentUser.getLatitude(),
+                            currentUser.getLongitude(),
+                            post.getLatitude(),
+                            post.getLongitude()
+                    );
+
+                    return ResPostDTO.builder()
+                            .id(post.getId())
+                            .username(post.getUser().getFullName())
+                            .title(post.getTitle())
+                            .postStatus(post.getPostStatus())
+                            .totalLikes(post.getLikeCount())
+                            .postDate(post.getPostDate())
+                            .imageUrl(post.getImages().stream()
+                                    .findFirst()
+                                    .map(Image::getImageUrl)
+                                    .orElse(null))
+                            .category(post.getCategory())
+                            .distance(distance)              // 👈 thêm vào DTO
+                            .build();
+                })
                 .toList();
+
 
         MetaData metaData = MetaData.builder()
                 .page(postPage.getNumber()+1)

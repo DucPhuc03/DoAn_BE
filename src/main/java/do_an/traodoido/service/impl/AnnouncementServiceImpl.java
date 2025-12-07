@@ -25,4 +25,17 @@ public class AnnouncementServiceImpl implements AnnouncementService {
                 .data(announcements)
                 .build();
     }
+
+    @Override
+    public RestResponse<String> updateIsRead(Long id) {
+        Announcement announcement = announcementRepository.findById(id).orElse(null);
+        assert announcement != null;
+        announcement.setRead(true);
+        announcementRepository.save(announcement);
+        return RestResponse.<String>builder()
+                .code(1000)
+                .message("Success")
+                .data("Announcement marked as read")
+                .build();
+    }
 }

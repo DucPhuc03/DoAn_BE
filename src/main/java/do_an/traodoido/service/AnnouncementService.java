@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface AnnouncementService {
     RestResponse<List<Announcement>> getAnnouncementsForCurrentUser();
+    RestResponse<String> updateIsRead(Long id);
 }

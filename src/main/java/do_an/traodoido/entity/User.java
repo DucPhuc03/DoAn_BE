@@ -40,6 +40,8 @@ public class User implements UserDetails {
     private String role;
     @Enumerated(EnumType.STRING)
     private UserStatus status;
+    private double latitude;
+    private double longitude;
     private LocalDate createdAt;
 
     @Override

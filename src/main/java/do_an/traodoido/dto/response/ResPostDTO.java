@@ -19,5 +19,6 @@ public class ResPostDTO {
     private String imageUrl;
     private PostStatus postStatus;
     private int totalLikes;
+    private double distance;
     private Category category;
 }

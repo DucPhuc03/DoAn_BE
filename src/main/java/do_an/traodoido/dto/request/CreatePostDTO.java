@@ -31,6 +31,8 @@ public class CreatePostDTO {
     
     @NotNull(message = "Category ID is required")
     private Long categoryId;
+    private double latitude;
+    private double longitude;
     
     @NotNull(message = "User ID is required")
     private Long userId;

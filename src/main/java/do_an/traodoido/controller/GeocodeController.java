@@ -29,5 +29,12 @@ public class GeocodeController {
                 .data(location)
                 .build();
     }
+
+    @Operation(summary = "Tính khoảng cách", description = "Tính khoảng cách của user với post.")
+    @GetMapping("/distance")
+    public double getDistance() {
+        return geocodingService.calculateDistance(21.031941983002852,105.8531539114998,21.013501,105.797581);
+
+    }
 }
 

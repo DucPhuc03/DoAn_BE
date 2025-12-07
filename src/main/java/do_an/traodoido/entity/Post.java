@@ -28,6 +28,8 @@ public class Post {
     private String tradeLocation;
     @Enumerated(EnumType.STRING)
     private PostStatus postStatus;
+    private double latitude;
+    private double longitude;
 
     private int likeCount=0;
     @ManyToOne
