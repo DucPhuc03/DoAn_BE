@@ -1,5 +1,6 @@
 package do_an.traodoido.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import do_an.traodoido.dto.request.LoginRequest;
 import do_an.traodoido.dto.request.RegisterRequest;
 import do_an.traodoido.dto.response.LoginResponse;
@@ -44,5 +45,17 @@ public class AuthController {
     public ResponseEntity<RestResponse<Void>> register(@Valid @RequestBody RegisterRequest registerRequest) {
         RestResponse<Void> response = authService.register(registerRequest);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/login-google")
+    public ResponseEntity<LoginResponse> login_google(@RequestParam("code") String code) throws JsonProcessingException {
+        LoginResponse response = authService.oauthLogin(code);
+        ResponseCookie responseCookie=ResponseCookie.from("access_token",response.getAccessToken())
+                .httpOnly(true)
+                .path("/")
+                .secure(true)
+                .maxAge(jwtExpiration)
+                .build();
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE,responseCookie.toString()).body(response);
     }
 }

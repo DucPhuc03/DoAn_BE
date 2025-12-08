@@ -154,6 +154,8 @@ public class UserServiceImpl implements UserService {
         user.setPhoneNumber(updateProfileDTO.getPhoneNumber());
         user.setAddress(updateProfileDTO.getAddress());
         user.setBio(updateProfileDTO.getBio());
+        user.setLatitude(updateProfileDTO.getLatitude());
+        user.setLongitude(updateProfileDTO.getLongitude());
         userRepository.save(user);
         return RestResponse.<String>builder()
                 .code(1000)
