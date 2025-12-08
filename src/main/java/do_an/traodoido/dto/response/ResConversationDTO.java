@@ -12,8 +12,11 @@ public class ResConversationDTO {
     private Long tradeId;
     private String itemTitle;
     private String itemImage;
+    private Long userId;
     private String username;
     private String userAvatar;
+    private UserChat partner;
     List<ResMessageDTO> messages;
     TradeMeetingDTO meeting;
+
 }

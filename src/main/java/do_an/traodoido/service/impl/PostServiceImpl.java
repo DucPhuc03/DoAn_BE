@@ -289,7 +289,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public RestPageResponse<List<ResPostDTO>> searchPosts(String title, String categoryName, int page, int size) {
+    public RestPageResponse<List<ResPostDTO>> searchPosts(String title, String categoryName,int maxDistance, int page, int size) {
         User currentUser = resolveCurrentUser();
         Pageable pageable = PageRequest.of(page-1, size);
         String normalizedTitle = normalizeQueryParam(title);
@@ -332,6 +332,9 @@ public class PostServiceImpl implements PostService {
                             .distance(distance)              // 👈 thêm vào DTO
                             .build();
                 })
+                .filter(resPostDTO -> resPostDTO.getDistance() <maxDistance) // Lọc các bài đăng có khoảng cách hợp lệ
+                .sorted((java.util.Comparator.comparingDouble(ResPostDTO::getDistance)) // Sắp xếp theo khoảng cách
+                )
                 .toList();
 
 

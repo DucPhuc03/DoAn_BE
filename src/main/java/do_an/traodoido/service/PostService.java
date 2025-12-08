@@ -27,6 +27,7 @@ public interface PostService {
     RestPageResponse<List<ResPostDTO>> searchPosts(
             String title,
             String categoryName,
+            int maxDistance,
             int page,
             int size
     );

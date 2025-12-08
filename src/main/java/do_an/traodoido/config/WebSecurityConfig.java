@@ -52,6 +52,7 @@ public class WebSecurityConfig {
                         .requestMatchers(HttpMethod.GET,"/api/category").permitAll()
                         .requestMatchers(HttpMethod.GET,"/api/geocode").permitAll()
                         .requestMatchers(HttpMethod.GET,"/api/category/admin").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET,"/api/report").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST,"/api/category/admin").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE,"/api/category/admin/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT,"/api/category/admin/**").hasRole("ADMIN")

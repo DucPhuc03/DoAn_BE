@@ -10,11 +10,13 @@ import java.util.List;
 
 @Repository
 public interface MeetingRepository extends JpaRepository<Meeting, Long> {
-    @Query("SELECT m FROM Meeting m " +
-            "JOIN m.trade t " +
-            "WHERE t.requester.id = :userId OR t.owner.id = :userId"
-            + " ORDER BY m.meetingDate DESC"
-    )
+    @Query("""
+    SELECT m FROM Meeting m
+    JOIN m.trade t
+    WHERE (t.requester.id = :userId OR t.owner.id = :userId)
+      AND m.status <> do_an.traodoido.enums.MeetingStatus.WAITING
+    ORDER BY m.meetingDate DESC
+    """)
     List<Meeting> findByUserId(@Param("userId") Long userId);
 
     Meeting findByTradeId(Long tradeId);
