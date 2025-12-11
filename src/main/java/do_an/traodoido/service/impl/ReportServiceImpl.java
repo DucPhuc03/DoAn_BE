@@ -13,6 +13,7 @@ import do_an.traodoido.repository.UserRepository;
 import do_an.traodoido.service.ReportService;
 import do_an.traodoido.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -42,7 +43,7 @@ public class ReportServiceImpl implements ReportService {
                 .code(1000)
                 .build();
     }
-
+    @PreAuthorize("hasRole('ADMIN')")
     @Override
     public RestResponse<List<ResReportDTO>> getAllReports() {
         List<Report> reports = reportRepository.findAll();

@@ -8,5 +8,6 @@ import lombok.Data;
 public class CreateReportDTO {
     private Long reportedId;
     private String reason;
+    private String type;
 
 }

@@ -9,6 +9,7 @@ import do_an.traodoido.dto.response.LoginResponse;
 import do_an.traodoido.dto.response.RestResponse;
 import do_an.traodoido.dto.response.UserLogin;
 import do_an.traodoido.entity.User;
+import do_an.traodoido.enums.UserStatus;
 import do_an.traodoido.exception.UsernameAlreadyExistsException;
 import do_an.traodoido.repository.UserRepository;
 import do_an.traodoido.util.JwtService;
@@ -75,6 +76,7 @@ public class AuthService {
                 .password(passwordEncoder.encode(registerRequest.getPassword()))
                 .createdAt(LocalDate.now())
                 .role("USER")
+                .status(UserStatus.ACTIVE)
                 .build();
         
         userRepository.save(user);
@@ -140,6 +142,7 @@ public class AuthService {
                     .password(passwordEncoder.encode("oauth2user"))
                     .createdAt(LocalDate.now())
                     .role("USER")
+                    .status(UserStatus.ACTIVE)
                     .build();
             userRepository.save(userGoogle);
             String accessToken = jwtService.generateToken(userGoogle);

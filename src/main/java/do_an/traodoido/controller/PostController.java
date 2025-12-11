@@ -103,7 +103,7 @@ public class PostController {
             @RequestParam(required = false) String categoryName,
             @RequestParam(required = false,defaultValue="100") int maxDistance,
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "18") int size
     ) {
         RestPageResponse<List<ResPostDTO>> response = postService.searchPosts(title, categoryName,maxDistance, page, size);
         return ResponseEntity.ok(response);
