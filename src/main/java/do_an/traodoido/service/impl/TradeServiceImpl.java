@@ -99,39 +99,39 @@ public class TradeServiceImpl implements TradeService {
         trade.setTradeStatus(trade.getTradeStatus().equals(TradeStatus.PENDING) ? TradeStatus.COMPLETED_PENDING : TradeStatus.COMPLETED);
         if(trade.getUserStart()==null&&trade.getUserEnd()==null){
             trade.setUserStart(currentUserId);
-            announcementRepository.save(Announcement.builder()
-                    .user(userRepository.findById(trade.getUserEnd()).orElseThrow())
-                    .title("Bạn có một yêu cầu trao đổi mới")
-                    .type("exchange")
-                    .message(userRepository.findById(trade.getUserEnd()).get().getFullName() + " đã hoàn thành trao đổi.")
-                    .time(LocalDate.now())
-                    .isRead(false)
-                    .link("/chat")
-                    .build());
+//            announcementRepository.save(Announcement.builder()
+//                    .user(userRepository.findById(currentUserId).orElseThrow())
+//                    .title("Bạn có một yêu cầu trao đổi mới")
+//                    .type("exchange")
+//                    .message(userRepository.findById(trade.getUserStart()).get().getFullName() + " đã hoàn thành trao đổi.")
+//                    .time(LocalDate.now())
+//                    .isRead(false)
+//                    .link("/chat")
+//                    .build());
         }
         else if(trade.getUserStart()==null){
             trade.setUserStart(currentUserId);
-            announcementRepository.save(Announcement.builder()
-                    .user(userRepository.findById(trade.getUserEnd()).orElseThrow())
-                    .title("Bạn có một yêu cầu trao đổi mới")
-                    .type("exchange")
-                    .message(userRepository.findById(trade.getUserEnd()).get().getFullName() + " đã hoàn thành trao đổi.")
-                    .time(LocalDate.now())
-                    .isRead(false)
-                    .link("/chat")
-                    .build());
+//            announcementRepository.save(Announcement.builder()
+//                    .user(userRepository.findById(trade.getUserEnd()).orElseThrow())
+//                    .title("Bạn có một yêu cầu trao đổi mới")
+//                    .type("exchange")
+//                    .message(userRepository.findById(trade.getUserStart()).get().getFullName() + " đã hoàn thành trao đổi.")
+//                    .time(LocalDate.now())
+//                    .isRead(false)
+//                    .link("/chat")
+//                    .build());
         }
         else {
             trade.setUserEnd(currentUserId);
-            announcementRepository.save(Announcement.builder()
-                    .user(userRepository.findById(trade.getUserStart()).orElseThrow())
-                    .title("Bạn có một yêu cầu trao đổi mới")
-                    .type("exchange")
-                    .message(userRepository.findById(trade.getUserStart()).get().getFullName() + " đã hoàn thành trao đổi.")
-                    .time(LocalDate.now())
-                    .isRead(false)
-                    .link("/chat")
-                    .build());
+//            announcementRepository.save(Announcement.builder()
+//                    .user(userRepository.findById(trade.getUserStart()).orElseThrow())
+//                    .title("Bạn có một yêu cầu trao đổi mới")
+//                    .type("exchange")
+//                    .message(userRepository.findById(trade.getUserStart()).get().getFullName() + " đã hoàn thành trao đổi.")
+//                    .time(LocalDate.now())
+//                    .isRead(false)
+//                    .link("/chat")
+//                    .build());
         }
         tradeRepository.save(trade);
         return RestResponse.<String>builder()
