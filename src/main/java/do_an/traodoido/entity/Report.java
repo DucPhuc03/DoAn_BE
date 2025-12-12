@@ -21,6 +21,8 @@ public class Report {
     private Long id;
     private String reason;
     private String description;
+    private String type;
+    private Long postId;
     private LocalDate reportDate;
     @Enumerated(EnumType.STRING)
     private ReportStatus status;

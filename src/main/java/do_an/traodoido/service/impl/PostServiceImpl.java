@@ -210,8 +210,9 @@ public class PostServiceImpl implements PostService {
         post.setItemCondition(createPostDTO.getItemCondition());
         post.setPostDate(createPostDTO.getPostDate() != null ? createPostDTO.getPostDate() : post.getPostDate());
         post.setTradeLocation(createPostDTO.getTradeLocation());
-        post.setLatitude(createPostDTO.getLatitude());
-        post.setLongitude(createPostDTO.getLongitude());
+            post.setLatitude(createPostDTO.getLatitude());
+            post.setLongitude(createPostDTO.getLongitude());
+
         post.setCategory(category);
 
         postRepository.save(post);

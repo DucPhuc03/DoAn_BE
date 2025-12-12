@@ -78,7 +78,7 @@ public class PostController {
     }
 
     @Operation(summary = "Cập nhật bài đăng", description = "Cập nhật thông tin bài đăng. Hình ảnh là tùy chọn. Chỉ chủ sở hữu mới có thể cập nhật. Yêu cầu xác thực.")
-    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PatchMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<RestResponse<String>> updatePost(
             @PathVariable Long id,
             @RequestPart("postDTO") String postDTOJson,

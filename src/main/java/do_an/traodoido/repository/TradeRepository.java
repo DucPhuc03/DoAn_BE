@@ -1,5 +1,6 @@
 package do_an.traodoido.repository;
 
+import do_an.traodoido.entity.Post;
 import do_an.traodoido.entity.Trade;
 import do_an.traodoido.enums.TradeStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -32,4 +33,19 @@ public interface TradeRepository  extends JpaRepository<Trade, Long> {
       AND t.id = :tradeId
 """)
     boolean isParticipant(@Param("userId") Long userId, @Param("tradeId") Long tradeId);
+
+    /**
+     * Lấy danh sách bài Post của người đối tác trong giao dịch.
+     * Nếu user là requester thì trả về ownerPost, ngược lại trả về requesterPost.
+     */
+    @Query("""
+        SELECT CASE
+                   WHEN t.requester.id = :userId THEN t.ownerPost
+                   ELSE t.requesterPost
+               END
+        FROM Trade t
+        WHERE t.requester.id = :userId OR t.owner.id = :userId
+    """)
+    List<Post> findCounterpartyPosts(@Param("userId") Long userId);
+
 }

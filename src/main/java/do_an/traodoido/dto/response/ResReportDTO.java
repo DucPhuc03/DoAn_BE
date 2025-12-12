@@ -11,6 +11,8 @@ import java.time.LocalDate;
 public class ResReportDTO {
     private Long id;
     private Long reportedId;
+    private Long postId;
+    private String type;
     private String reason;
     private UserChat reporter;
     private UserChat reportedUser;

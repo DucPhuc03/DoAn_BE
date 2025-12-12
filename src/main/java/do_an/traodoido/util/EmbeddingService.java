@@ -73,16 +73,20 @@ public class EmbeddingService {
     }
 
     private String buildContent(Post post) {
-        return """
-            Title: %s
-            Description: %s
-            Category: %s
-            Condition: %s
-        """.formatted(
+        String content = """
+        Title: %s
+        Description: %s
+        Category: %s
+        Condition: %s
+    """.formatted(
                 post.getTitle(),
                 post.getDescription(),
                 post.getCategory().getName(),
                 post.getItemCondition()
         );
+
+        // Chuyển newline thật thành "\n"
+        return content.replace("\n", "\\n").trim();
     }
+
 }

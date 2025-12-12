@@ -51,6 +51,8 @@ public class ReportServiceImpl implements ReportService {
                 .id(report.getId())
                 .reportedId(report.getReportedUser().getId())
                 .reason(report.getReason())
+                .type(report.getType())
+                .postId(report.getPostId()!=null?report.getPostId():null)
                 .reporter(UserChat.builder()
                         .userId(report.getReporter().getId())
                         .username(report.getReporter().getUsername())

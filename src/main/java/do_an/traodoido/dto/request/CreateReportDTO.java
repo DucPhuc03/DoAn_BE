@@ -9,5 +9,6 @@ public class CreateReportDTO {
     private Long reportedId;
     private String reason;
     private String type;
+    private Long postId;
 
 }
