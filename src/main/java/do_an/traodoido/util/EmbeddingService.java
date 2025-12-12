@@ -62,41 +62,27 @@ public class EmbeddingService {
 
         return vector;
     }
-    public String createEmbeddingForPost(Long id){
-        Post post = postRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Post không tồn tại: " + id));
-
-        String content = buildContent(post);
-        log.info("Embedding post {} with content: {}", id, content);
-
-//        List<Float> vector = embed(content);
-//        log.info("Vector size for post {}: {}", id, vector.size());
-//
-//        try {
-//            s3Service.saveItemVector(post.getId(), vector);
-//        } catch (Exception e) {
-//            log.error("Lưu embedding lên S3 thất bại cho post {}: {}", id, e.getMessage(), e);
-//            throw e;
-//        }
-
-        return content;
+    public List<Float> createEmbeddingForPost(Long id){
+        Post post=postRepository.findById(id).orElseThrow();
+        String content =buildContent(post);
+        log.info(content);
+        List<Float> vector=embed(content);
+        log.info("test",vector);
+        s3Service.saveItemVector(post.getId(),vector);
+        return vector;
     }
 
     private String buildContent(Post post) {
-        String content = """
-        Title: %s
-        Description: %s
-        Category: %s
-        Condition: %s
-    """.formatted(
+        return """
+            Title: %s
+            Description: %s
+            Category: %s
+            Condition: %s
+        """.formatted(
                 post.getTitle(),
                 post.getDescription(),
                 post.getCategory().getName(),
                 post.getItemCondition()
         );
-
-        // Chuyển newline thật thành "\n"
-        return content.replace("\n", "\\n").trim();
     }
-
 }

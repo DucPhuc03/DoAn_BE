@@ -3,11 +3,11 @@ package do_an.traodoido.util;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
-
+import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -17,12 +17,12 @@ import software.amazon.awssdk.core.sync.RequestBody;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
-@Slf4j
 public class S3Service {
     private final AmazonS3 s3Client;
 
@@ -146,11 +146,44 @@ public class S3Service {
             s3Client.putObject(putObjectRequest);   // SDK V1 call
 
         } catch (Exception e) {
-            log.error("Lỗi lưu vector lên S3: {}", e.getMessage(), e);
+
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Không thể lưu vector lên S3", e);
         }
     }
 
+    public List<Float> loadPostVector(Long postId) {
+        if (postId == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "postId rỗng");
+        }
 
+        String objectKey = "embedding_post/" + postId + ".json";
 
+        try {
+            // Kiểm tra xem file có tồn tại không
+            if (!s3Client.doesObjectExist(bucketName, objectKey)) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy vector cho postId: " + postId);
+            }
+
+            // Lấy object từ S3
+            S3Object s3Object = s3Client.getObject(bucketName, objectKey);
+            S3ObjectInputStream inputStream = s3Object.getObjectContent();
+
+            // Đọc và parse JSON
+            try (InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
+                JsonObject json = gson.fromJson(reader, JsonObject.class);
+                JsonArray vectorArray = json.getAsJsonArray("vector");
+
+                List<Float> vector = new ArrayList<>();
+                for (int i = 0; i < vectorArray.size(); i++) {
+                    vector.add(vectorArray.get(i).getAsFloat());
+                }
+
+                return vector;
+            }
+        } catch (ResponseStatusException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Không thể đọc vector từ S3", e);
+        }
+    }
 }

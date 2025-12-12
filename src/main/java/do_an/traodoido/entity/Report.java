@@ -22,6 +22,7 @@ public class Report {
     private String reason;
     private String description;
     private LocalDate reportDate;
+    @Enumerated(EnumType.STRING)
     private ReportStatus status;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reporter_id", nullable = false)

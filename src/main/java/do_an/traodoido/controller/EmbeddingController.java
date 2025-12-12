@@ -24,11 +24,12 @@ public class EmbeddingController {
     }
     @PostMapping("/embedding/{postId}")
     public List<Float> getEmbedding(@PathVariable("postId") Long id){
-        String content=embeddingService.createEmbeddingForPost(id);
+        return embeddingService.createEmbeddingForPost(id);
+    }
 
-        List<Float> res=embeddingService.embed(content);
-        s3Service.saveItemVector(id,res);
-        return res;
+    @GetMapping("/post/{postId}")
+    public List<Float> loadPostVector(@PathVariable("postId") Long id){
+        return s3Service.loadPostVector(id);
     }
 
 

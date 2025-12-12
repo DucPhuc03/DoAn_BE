@@ -132,7 +132,7 @@ public class AuthService {
         String name = userInfoJson.path("name").asText("");
         String picture = userInfoJson.path("picture").asText("");
 
-        User user = userRepository.findByEmailAndFullNameAndAvatarUrl(email, name, picture);
+        User user = userRepository.findByEmail(email);
         if(user == null){
             User userGoogle = User.builder()
                     .email(email)
