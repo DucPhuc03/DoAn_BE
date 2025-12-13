@@ -22,6 +22,5 @@ public class Category {
     private String name;
     private String image;
     @Enumerated(EnumType.STRING)
-    @Builder.Default
-    private CategoryStatus status=CategoryStatus.ACTIVE;
+    private CategoryStatus status;
 }

@@ -31,5 +31,14 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     Page<Post> findByPostStatusNotIn(List<PostStatus> excludedStatus, Pageable pageable);
 
+
     List<Post> findAllByPostStatus(PostStatus postStatus);
+    @Query("""
+    SELECT p.id
+    FROM Post p
+    WHERE p.user.id <> :userId
+      AND p.postStatus <> do_an.traodoido.enums.PostStatus.COMPLETED
+      AND p.postStatus <> do_an.traodoido.enums.PostStatus.DELETED
+""")
+    List<Long> findAllPostId(@Param("userId") Long userId);
 }

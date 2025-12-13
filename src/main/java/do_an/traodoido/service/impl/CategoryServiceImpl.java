@@ -45,6 +45,7 @@ public class CategoryServiceImpl implements CategoryService {
             String imageUrl = s3Service.uploadFile(image, "category");
             category.setImage(imageUrl);
         }
+        category.setStatus(CategoryStatus.ACTIVE);
 
         categoryRepository.save(category);
         return RestResponse.<String>builder()

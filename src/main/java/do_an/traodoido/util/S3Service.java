@@ -151,6 +151,41 @@ public class S3Service {
         }
     }
 
+    public void saveUserVector(Long itemId, List<Float> vector) {
+        if (itemId == null) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "itemId rỗng");
+        if (vector == null || vector.isEmpty()) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "vector rỗng");
+
+        JsonObject json = new JsonObject();
+        json.addProperty("id", itemId);
+        json.addProperty("type", "user");
+        json.addProperty("dimensions", vector.size());
+
+        JsonArray arr = new JsonArray();
+        vector.forEach(arr::add);
+        json.add("vector", arr);
+
+        String jsonString = gson.toJson(json);
+        byte[] bytes = jsonString.getBytes(StandardCharsets.UTF_8);
+
+        String objectKey = "embedding_user/" + itemId + ".json";
+
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentType("application/json");
+        metadata.setContentLength(bytes.length);
+
+        try (ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes)) {
+
+            PutObjectRequest putObjectRequest =
+                    new PutObjectRequest(bucketName, objectKey, inputStream, metadata);
+
+            s3Client.putObject(putObjectRequest);   // SDK V1 call
+
+        } catch (Exception e) {
+
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Không thể lưu vector lên S3", e);
+        }
+    }
+
     public List<Float> loadPostVector(Long postId) {
         if (postId == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "postId rỗng");
@@ -187,5 +222,39 @@ public class S3Service {
         }
     }
 
+    public List<Float> loadUserVector(Long postId) {
+        if (postId == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "UserId rỗng");
+        }
 
+        String objectKey = "embedding_user/" + postId + ".json";
+
+        try {
+            // Kiểm tra xem file có tồn tại không
+            if (!s3Client.doesObjectExist(bucketName, objectKey)) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy vector cho UserID: " + postId);
+            }
+
+            // Lấy object từ S3
+            S3Object s3Object = s3Client.getObject(bucketName, objectKey);
+            S3ObjectInputStream inputStream = s3Object.getObjectContent();
+
+            // Đọc và parse JSON
+            try (InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
+                JsonObject json = gson.fromJson(reader, JsonObject.class);
+                JsonArray vectorArray = json.getAsJsonArray("vector");
+
+                List<Float> vector = new ArrayList<>();
+                for (int i = 0; i < vectorArray.size(); i++) {
+                    vector.add(vectorArray.get(i).getAsFloat());
+                }
+
+                return vector;
+            }
+        } catch (ResponseStatusException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Không thể đọc vector từ S3", e);
+        }
+    }
 }

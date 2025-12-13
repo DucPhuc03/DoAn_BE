@@ -39,13 +39,17 @@ public interface TradeRepository  extends JpaRepository<Trade, Long> {
      * Nếu user là requester thì trả về ownerPost, ngược lại trả về requesterPost.
      */
     @Query("""
-        SELECT CASE
-                   WHEN t.requester.id = :userId THEN t.ownerPost
-                   ELSE t.requesterPost
-               END
-        FROM Trade t
-        WHERE t.requester.id = :userId OR t.owner.id = :userId
-    """)
+    SELECT CASE
+                          WHEN t.requester.id = :userId THEN t.ownerPost
+                          ELSE t.requesterPost
+                      END
+    FROM Trade t
+    WHERE (t.requester.id = :userId OR t.owner.id = :userId)
+      AND t.tradeStatus = "COMPLETED"
+""")
     List<Post> findCounterpartyPosts(@Param("userId") Long userId);
+
+
+
 
 }

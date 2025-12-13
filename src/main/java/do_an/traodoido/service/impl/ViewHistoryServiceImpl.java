@@ -11,6 +11,7 @@ import do_an.traodoido.service.ViewHistoryService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -44,5 +45,12 @@ public class ViewHistoryServiceImpl implements ViewHistoryService {
                 .message("viewHistory created successfully")
                 .data("Success")
                 .build();
+    }
+
+    @Override
+    public List<Long> getPostView(Long id) {
+        List<ViewHistory> list=viewHistoryRepository.findAllByUserId(id);
+        return list.stream().map(view->view.getPost().getId()).toList();
+
     }
 }
