@@ -31,4 +31,6 @@ public interface PostService {
             int page,
             int size
     );
+
+    RestResponse<List<ResPostDTO>> recommendForUser();
 }

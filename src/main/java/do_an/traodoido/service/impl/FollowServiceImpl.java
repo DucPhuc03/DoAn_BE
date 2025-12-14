@@ -64,6 +64,7 @@ public class FollowServiceImpl implements FollowService {
                     .userId(following.getId())
                     .fullName(following.getFullName())
                     .avatarUrl(following.getAvatarUrl())
+                    .username(following.getUsername())
                     .build();
         }).toList();
         return resFollowDTOS;
@@ -79,6 +80,7 @@ public class FollowServiceImpl implements FollowService {
                     .userId(following.getId())
                     .fullName(following.getFullName())
                     .avatarUrl(following.getAvatarUrl())
+                    .username(following.getUsername())
                     .build();
         }).toList();
         return resFollowDTOS;

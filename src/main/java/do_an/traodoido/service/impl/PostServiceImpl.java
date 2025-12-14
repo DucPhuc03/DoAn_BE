@@ -9,6 +9,7 @@ import do_an.traodoido.exception.InvalidException;
 import do_an.traodoido.exception.UnauthorizedAccessException;
 import do_an.traodoido.repository.*;
 import do_an.traodoido.service.PostService;
+import do_an.traodoido.util.EmbeddingService;
 import do_an.traodoido.util.GeocodingService;
 import do_an.traodoido.util.S3Service;
 
@@ -41,6 +42,7 @@ public class PostServiceImpl implements PostService {
     private final LikeRepository likeRepository;
     private final VisionService visionService;
     private final GeocodingService geocodingService;
+    private final EmbeddingService embeddingService;
     
     @Override
     public RestResponse<String> createPost(CreatePostDTO createPostDTO, MultipartFile[] images) throws IOException {
@@ -200,7 +202,6 @@ public class PostServiceImpl implements PostService {
         if (!post.getUser().getId().equals(user.getId())) {
             throw new UnauthorizedAccessException("You don't have permission to update this post");
         }
-
         Category category = categoryRepository.findById(createPostDTO.getCategoryId())
                 .orElseThrow(() -> new InvalidException("Category", createPostDTO.getCategoryId()));
 
@@ -295,7 +296,6 @@ public class PostServiceImpl implements PostService {
         Pageable pageable = PageRequest.of(page-1, size);
         String normalizedTitle = normalizeQueryParam(title);
         String normalizedCategoryName = normalizeQueryParam(categoryName);
-
         Page<Post> postPage;
         if (normalizedTitle == null && normalizedCategoryName == null) {
             postPage = postRepository.findByPostStatusNotIn(List.of(PostStatus.WAITING, PostStatus.COMPLETED,PostStatus.DELETED),pageable);
@@ -307,10 +307,8 @@ public class PostServiceImpl implements PostService {
                     pageable
             );
         }
-
         List<ResPostDTO> resPostDTOs = postPage.getContent().stream()
                 .map(post -> {
-
                     double distance = geocodingService.calculateDistance(
                             currentUser.getLatitude(),
                             currentUser.getLongitude(),
@@ -351,6 +349,42 @@ public class PostServiceImpl implements PostService {
                 .message("Posts retrieved successfully")
                 .data(resPostDTOs)
                 .metaData(metaData)
+                .build();
+    }
+
+    @Override
+    public RestResponse<List<ResPostDTO>> recommendForUser() {
+        User user=resolveCurrentUser();
+        List<RecommendedItem> recommendedItems=embeddingService.recommendForUser(user.getId());
+        List<Post> posts=recommendedItems.stream().map(item->postRepository.findById(item.getId()).orElseThrow()).toList();
+        List<ResPostDTO> resPostDTOs = posts.stream()
+                .map(post -> {
+                    double distance = geocodingService.calculateDistance(
+                            user.getLatitude(),
+                            user.getLongitude(),
+                            post.getLatitude(),
+                            post.getLongitude()
+                    );
+                    return ResPostDTO.builder()
+                            .id(post.getId())
+                            .username(post.getUser().getFullName())
+                            .title(post.getTitle())
+                            .postStatus(post.getPostStatus())
+                            .totalLikes(post.getLikeCount())
+                            .postDate(post.getPostDate())
+                            .imageUrl(post.getImages().stream()
+                                    .findFirst()
+                                    .map(Image::getImageUrl)
+                                    .orElse(null))
+                            .category(post.getCategory())
+                            .distance(distance)
+                            .build();
+                })
+                .toList();
+        return RestResponse.<List<ResPostDTO>>builder()
+                .code(1000)
+                .message("Posts recommended successfully")
+                .data(resPostDTOs)
                 .build();
     }
 

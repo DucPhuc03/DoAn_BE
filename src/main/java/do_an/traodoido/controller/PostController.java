@@ -70,9 +70,6 @@ public class PostController {
     @Operation(summary = "Xóa bài đăng", description = "Xóa một bài đăng theo ID. Chỉ chủ sở hữu bài đăng mới có thể xóa. Yêu cầu xác thực.")
     @DeleteMapping("/{id}")
     public ResponseEntity<RestResponse<String>> deletePost(@PathVariable Long id) {
-        
-
-
         RestResponse<String> response = postService.deletePost(id);
         return ResponseEntity.ok(response);
     }
@@ -108,4 +105,11 @@ public class PostController {
         RestPageResponse<List<ResPostDTO>> response = postService.searchPosts(title, categoryName,maxDistance, page, size);
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/recommend")
+    public ResponseEntity<RestResponse<List<ResPostDTO>>> getPostsRecommend() {
+        RestResponse<List<ResPostDTO>> response = postService.recommendForUser();
+        return ResponseEntity.ok(response);
+    }
+
 }

@@ -9,9 +9,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
@@ -28,5 +26,10 @@ public class ConversationController {
     @GetMapping
     public ResponseEntity<RestResponse<Map<UserChat,List<ResConversationDTO>>>> getConversationIds() {
         return ResponseEntity.ok(conversationService.getConversationIds());
+    }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> getConversationIds(@PathVariable("id") Long id) {
+        conversationService.deleteConversation(id);
+        return ResponseEntity.ok(null);
     }
 }

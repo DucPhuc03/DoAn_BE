@@ -9,4 +9,5 @@ import java.util.Map;
 
 public interface ConversationService {
     RestResponse<Map<UserChat,List<ResConversationDTO>>> getConversationIds();
+    void deleteConversation(Long id);
 }

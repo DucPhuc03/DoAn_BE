@@ -46,6 +46,8 @@ public class Trade {
     @JoinColumn(name = "owner_post_id", nullable = false)
     private Post ownerPost;
 
+    @OneToOne(mappedBy = "trade", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Conversation conversation;
     private LocalDateTime createdAt;
 
 }

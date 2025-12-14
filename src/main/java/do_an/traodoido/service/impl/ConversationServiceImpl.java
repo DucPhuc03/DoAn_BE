@@ -8,7 +8,9 @@ import do_an.traodoido.entity.Conversation;
 import do_an.traodoido.entity.Image;
 import do_an.traodoido.entity.Message;
 import do_an.traodoido.entity.User;
+import do_an.traodoido.enums.TradeStatus;
 import do_an.traodoido.repository.ConversationRepository;
+import do_an.traodoido.repository.TradeRepository;
 import do_an.traodoido.service.ConversationService;
 import do_an.traodoido.service.MeetingService;
 import do_an.traodoido.service.UserService;
@@ -29,6 +31,7 @@ public class ConversationServiceImpl implements ConversationService  {
     private final ConversationRepository conversationRepository;
     private final UserService userService;
     private final MeetingService meetingService;
+    private final TradeRepository tradeRepository;
 
     @Override
     public RestResponse<Map<UserChat,List<ResConversationDTO>>> getConversationIds() {
@@ -36,6 +39,7 @@ public class ConversationServiceImpl implements ConversationService  {
         List<Conversation> conversations = conversationRepository
                 .findByParticipant1_IdOrParticipant2_IdOrderByIdDesc(currentUserId, currentUserId);
         List<ResConversationDTO> data = conversations.stream()
+                .filter(conversation ->!conversation.getTrade().getTradeStatus().equals(TradeStatus.COMPLETED))
                 .map(conversation -> ResConversationDTO.builder()
                         .conversationId(conversation.getId())
                         .tradeId(conversation.getTrade() != null ? conversation.getTrade().getId() : null)
@@ -82,6 +86,14 @@ public class ConversationServiceImpl implements ConversationService  {
                 .message("OK")
                 .data(groupedByTradeId)
                 .build();
+    }
+
+    @Override
+    public void deleteConversation(Long id) {
+        Conversation conversation=conversationRepository.findById(id).orElseThrow();
+        tradeRepository.deleteById(id);
+        conversationRepository.delete(conversation);
+
     }
 
     private List<ResMessageDTO> mapMessages(List<Message> messages,Long id) {

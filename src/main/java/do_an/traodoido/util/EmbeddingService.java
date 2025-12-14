@@ -6,11 +6,13 @@ import com.google.gson.JsonObject;
 import do_an.traodoido.dto.response.RecommendedItem;
 import do_an.traodoido.dto.response.ResPostDTO;
 import do_an.traodoido.entity.Post;
+import do_an.traodoido.entity.Trade;
 import do_an.traodoido.entity.ViewHistory;
 import do_an.traodoido.enums.TradeStatus;
 import do_an.traodoido.repository.LikeRepository;
 import do_an.traodoido.repository.PostRepository;
 import do_an.traodoido.repository.TradeRepository;
+import do_an.traodoido.repository.ViewHistoryRepository;
 import do_an.traodoido.service.PostService;
 import do_an.traodoido.service.ViewHistoryService;
 import lombok.RequiredArgsConstructor;
@@ -40,8 +42,8 @@ public class EmbeddingService {
     private final S3Service s3Service;
     private final PostRepository postRepository;
     private final TradeRepository tradeRepository;
-    private final ViewHistoryService viewHistoryService;
-    private final PostService postService;
+    private final ViewHistoryRepository viewHistoryRepository;
+    private final LikeRepository likeRepository;
     private final Gson gson = new Gson();
 
     @Value("${aws.bedrock.model-id}")
@@ -86,11 +88,10 @@ public class EmbeddingService {
     }
 
     public List<Float> createEmbeddingForUser(Long id){
-        List<ResPostDTO> list=postService.getLikedPostsByUser(id);
-        List<Post> posts=tradeRepository.findCounterpartyPosts(id);
-        List<Long> liked=list.stream().map(ResPostDTO::getId).toList();
-        List<Long> viewed=viewHistoryService.getPostView(id);
-        List<Long> traded= posts.stream().map(Post::getId).toList();
+        List<Long> liked= likeRepository.findLikedPostIds(id);
+        List<Long> viewed=viewHistoryRepository.findViewedPostIds(id);
+        List<Trade> posts=tradeRepository.findCounterpartyPosts(id);
+        List<Long> traded= posts.stream().map(trade -> trade.getRequester().getId().equals(id)?trade.getOwnerPost().getId():trade.getRequesterPost().getId()).toList();
         if (liked.isEmpty() && viewed.isEmpty() && traded.isEmpty()) {
             throw new RuntimeException("User chưa có tương tác để tạo embedding.");
         }
@@ -154,7 +155,6 @@ public class EmbeddingService {
 
         List<Float> userVec = s3Service.loadUserVector(userId);
 
-
         List<Long> allItems=postRepository.findAllPostId(userId);
 
         List<RecommendedItem> results = new ArrayList<>();
@@ -170,7 +170,7 @@ public class EmbeddingService {
         // Sắp xếp theo điểm giảm dần
         results.sort((a, b) -> Double.compare(b.getSimilarity(), a.getSimilarity()));
 
-        return results;
+        return results.stream().limit(6).toList();
     }
 
 
