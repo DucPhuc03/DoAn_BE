@@ -18,7 +18,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     @Override
     public RestResponse<List<Announcement>> getAnnouncementsForCurrentUser() {
         User currentUser = userService.getCurrentUser();
-        List<Announcement> announcements = announcementRepository.findAllByUserId(currentUser.getId());
+        List<Announcement> announcements = announcementRepository.findAllByUserIdOrderByTimeDesc(currentUser.getId());
         return RestResponse.<List<Announcement>>builder()
                 .code(1000)
                 .message("Success")

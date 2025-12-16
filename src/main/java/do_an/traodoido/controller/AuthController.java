@@ -6,6 +6,8 @@ import do_an.traodoido.dto.request.RegisterRequest;
 import do_an.traodoido.dto.response.LoginResponse;
 import do_an.traodoido.dto.response.RestResponse;
 import do_an.traodoido.util.AuthService;
+import do_an.traodoido.util.MailService;
+import do_an.traodoido.util.OtpCacheService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -21,7 +23,8 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @Tag(name = "Authentication", description = "API quản lý xác thực người dùng (đăng nhập, đăng ký)")
 public class AuthController {
-    
+    private final MailService mailService;
+    private final OtpCacheService otpCache;
     private final AuthService authService;
     @Value("${jwt.expiration}")
     private long jwtExpiration;
@@ -57,5 +60,20 @@ public class AuthController {
                 .maxAge(jwtExpiration)
                 .build();
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE,responseCookie.toString()).body(response);
+    }
+    @PostMapping("/send-email-otp")
+    public ResponseEntity<?> send(@RequestParam String email) {
+        mailService.sendOtp(email);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/verify-email-otp")
+    public ResponseEntity<?> verify(
+            @RequestParam String email,
+            @RequestParam String otp
+    ) {
+        boolean ok = otpCache.verify(email, otp);
+        if (ok) otpCache.clear(email);
+        return ResponseEntity.ok(ok);
     }
 }

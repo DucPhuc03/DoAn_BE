@@ -4,12 +4,11 @@ import do_an.traodoido.dto.response.ResConversationDTO;
 import do_an.traodoido.dto.response.ResMessageDTO;
 import do_an.traodoido.dto.response.RestResponse;
 import do_an.traodoido.dto.response.UserChat;
-import do_an.traodoido.entity.Conversation;
-import do_an.traodoido.entity.Image;
-import do_an.traodoido.entity.Message;
-import do_an.traodoido.entity.User;
+import do_an.traodoido.entity.*;
+import do_an.traodoido.enums.PostStatus;
 import do_an.traodoido.enums.TradeStatus;
 import do_an.traodoido.repository.ConversationRepository;
+import do_an.traodoido.repository.PostRepository;
 import do_an.traodoido.repository.TradeRepository;
 import do_an.traodoido.service.ConversationService;
 import do_an.traodoido.service.MeetingService;
@@ -18,10 +17,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,6 +33,7 @@ public class ConversationServiceImpl implements ConversationService  {
     private final UserService userService;
     private final MeetingService meetingService;
     private final TradeRepository tradeRepository;
+    private final PostRepository postRepository;
 
     @Override
     public RestResponse<Map<UserChat,List<ResConversationDTO>>> getConversationIds() {
@@ -89,8 +91,15 @@ public class ConversationServiceImpl implements ConversationService  {
     }
 
     @Override
+    @Transactional
     public void deleteConversation(Long id) {
         Conversation conversation=conversationRepository.findById(id).orElseThrow();
+        Post owner=conversation.getTrade().getOwnerPost();
+        owner.setPostStatus(PostStatus.AVAILABLE);
+        postRepository.save(owner);
+        Optional<Post> requester= Optional.ofNullable(conversation.getTrade().getRequesterPost());
+        requester.ifPresent(post -> post.setPostStatus(PostStatus.AVAILABLE));
+        postRepository.save(requester.get());
         tradeRepository.deleteById(id);
         conversationRepository.delete(conversation);
 
