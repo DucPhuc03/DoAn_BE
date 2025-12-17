@@ -176,4 +176,11 @@ public class AuthService {
 
     }
 
+    public String resetPassword(String email,String password){
+        User user=userRepository.findByEmail(email);
+        user.setPassword(passwordEncoder.encode(password));
+        userRepository.save(user);
+        return "Đặt lại mật khẩu thành công";
+    }
+
 }

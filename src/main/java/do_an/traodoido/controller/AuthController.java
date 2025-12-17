@@ -5,6 +5,7 @@ import do_an.traodoido.dto.request.LoginRequest;
 import do_an.traodoido.dto.request.RegisterRequest;
 import do_an.traodoido.dto.response.LoginResponse;
 import do_an.traodoido.dto.response.RestResponse;
+import do_an.traodoido.entity.User;
 import do_an.traodoido.util.AuthService;
 import do_an.traodoido.util.MailService;
 import do_an.traodoido.util.OtpCacheService;
@@ -76,4 +77,13 @@ public class AuthController {
         if (ok) otpCache.clear(email);
         return ResponseEntity.ok(ok);
     }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(
+            @RequestParam String email,
+            @RequestParam String password
+    ) {
+      return ResponseEntity.ok(authService.resetPassword(email,password));
+    }
+
 }
