@@ -23,15 +23,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.TriConsumer;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.core.SdkBytes;
 import software.amazon.awssdk.services.bedrockruntime.BedrockRuntimeClient;
 import software.amazon.awssdk.services.bedrockruntime.model.InvokeModelRequest;
 import software.amazon.awssdk.services.bedrockruntime.model.InvokeModelResponse;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiConsumer;
 
 @Service
@@ -80,9 +80,9 @@ public class EmbeddingService {
     public List<Float> createEmbeddingForPost(Long id){
         Post post=postRepository.findById(id).orElseThrow();
         String content =buildContent(post);
-        log.info(content);
+
         List<Float> vector=embed(content);
-        log.info("test",vector);
+
         s3Service.saveItemVector(post.getId(),vector);
         return vector;
     }
@@ -93,7 +93,7 @@ public class EmbeddingService {
         List<Trade> posts=tradeRepository.findCounterpartyPosts(id);
         List<Long> traded= posts.stream().map(trade -> trade.getRequester().getId().equals(id)?trade.getOwnerPost().getId():trade.getRequesterPost().getId()).toList();
         if (liked.isEmpty() && viewed.isEmpty() && traded.isEmpty()) {
-            throw new RuntimeException("User chưa có tương tác để tạo embedding.");
+          liked=postRepository.findTop10PopularPosts(PageRequest.of(0,10));
         }
 
         // Trọng số
@@ -122,17 +122,14 @@ public class EmbeddingService {
 
         return sumVec;
     }
-
     private List<Float> apply(List<Float> sumVec, List<Long> ids, float weight) {
 
         for (Long id : ids) {
             try {
                 List<Float> vec = s3Service.loadPostVector(id);
-
                 if (vec == null) {
                     throw new RuntimeException("Vector null! postId = " + id);
                 }
-
                 if (sumVec == null) {
                     sumVec = new ArrayList<>(vec);
                 } else {
@@ -142,7 +139,7 @@ public class EmbeddingService {
                 }
 
             } catch (Exception e) {
-                System.err.println("❌ Lỗi khi load vector cho postId = " + id);
+                System.err.println("Lỗi khi load vector cho postId = " + id);
                 e.printStackTrace();
                 throw e;
             }
@@ -150,16 +147,21 @@ public class EmbeddingService {
 
         return sumVec;
     }
-
     public List<RecommendedItem> recommendForUser(Long userId) {
-
-        List<Float> userVec = s3Service.loadUserVector(userId);
+        List<Long> liked= likeRepository.findLikedPostIds(userId);
+        List<Long> viewed=viewHistoryRepository.findViewedPostIds(userId);
+        List<Trade> posts=tradeRepository.findCounterpartyPosts(userId);
+        List<Long> traded= posts.stream().map(trade -> trade.getRequester().getId().equals(userId)?trade.getOwnerPost().getId():trade.getRequesterPost().getId()).toList();
 
         List<Long> allItems=postRepository.findAllPostId(userId);
-
+        Set<Long> allSet = new HashSet<>(allItems);
+        liked.forEach(allSet::remove);
+        viewed.forEach(allSet::remove);
+        traded.forEach(allSet::remove);
+        List<Long> candidateItems = new ArrayList<>(allSet);
+        List<Float> userVec = s3Service.loadUserVector(userId);
         List<RecommendedItem> results = new ArrayList<>();
-
-        for (Long itemId : allItems) {
+        for (Long itemId : candidateItems) {
             List<Float> itemVec = s3Service.loadPostVector(itemId);
 
             double sim = cosineSimilarity(userVec, itemVec);

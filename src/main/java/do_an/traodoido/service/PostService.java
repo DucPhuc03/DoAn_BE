@@ -2,10 +2,7 @@ package do_an.traodoido.service;
 
 import do_an.traodoido.dto.request.CreatePostDTO;
 import do_an.traodoido.dto.request.UpdateStatusPost;
-import do_an.traodoido.dto.response.ResPostDTO;
-import do_an.traodoido.dto.response.ResPostDetailDTO;
-import do_an.traodoido.dto.response.RestPageResponse;
-import do_an.traodoido.dto.response.RestResponse;
+import do_an.traodoido.dto.response.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -33,4 +30,6 @@ public interface PostService {
     );
 
     RestResponse<List<ResPostDTO>> recommendForUser();
+
+    RestResponse<ResPostReportDTO> getPostReport(Long id);
 }

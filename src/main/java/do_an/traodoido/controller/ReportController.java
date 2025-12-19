@@ -27,8 +27,18 @@ public class ReportController {
     }
     @GetMapping
     @Operation(summary = "Lấy tất cả báo cáo vi phạm", description = "Lấy danh sách tất cả các báo cáo vi phạm")
-    public ResponseEntity<RestResponse<java.util.List<do_an.traodoido.dto.response.ResReportDTO>>> getAllReports() {
+    public ResponseEntity<RestResponse<List<ResReportDTO>>> getAllReports() {
         RestResponse<List<ResReportDTO>> response = reportService.getAllReports();
+        return ResponseEntity.ok(response);
+    }
+    @PatchMapping("/admin/{id}")
+    public ResponseEntity<RestResponse<String>> updateReport(@PathVariable("id") Long id) {
+        RestResponse<String> response = reportService.updateStatus(id);
+        return ResponseEntity.ok(response);
+    }
+    @DeleteMapping("/admin/{id}")
+    public ResponseEntity<RestResponse<String>> deleteReport(@PathVariable("id") Long id) {
+        RestResponse<String> response = reportService.deleteReport(id);
         return ResponseEntity.ok(response);
     }
 }

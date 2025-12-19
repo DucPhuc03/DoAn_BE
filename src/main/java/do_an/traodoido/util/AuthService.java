@@ -33,6 +33,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmbeddingService embeddingService;
 
     @Value("${google.client-id}")
     private String clientId;
@@ -56,7 +57,9 @@ public class AuthService {
                 .email(user.getEmail())
                 .avatarUrl(user.getAvatarUrl())
                 .role(user.getRole())
+                .status(user.getStatus())
                 .build();
+        embeddingService.createEmbeddingForUser(userLogin.getId());
         return LoginResponse.builder()
                 .accessToken(accessToken)
                 .user(userLogin)
@@ -152,6 +155,7 @@ public class AuthService {
                     .email(userGoogle.getEmail())
                     .avatarUrl(userGoogle.getAvatarUrl())
                     .role(userGoogle.getRole())
+                    .status(userGoogle.getStatus())
                     .build();
             return LoginResponse.builder()
                     .accessToken(accessToken)
@@ -166,6 +170,7 @@ public class AuthService {
                     .email(user.getEmail())
                     .avatarUrl(user.getAvatarUrl())
                     .role(user.getRole())
+                    .status(user.getStatus())
                     .build();
             return LoginResponse.builder()
                     .accessToken(accessToken)

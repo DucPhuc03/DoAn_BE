@@ -1,5 +1,6 @@
 package do_an.traodoido.controller;
 
+import do_an.traodoido.dto.request.CreateAnnouncement;
 import do_an.traodoido.dto.response.RestResponse;
 import do_an.traodoido.entity.Announcement;
 import do_an.traodoido.service.AnnouncementService;
@@ -24,4 +25,10 @@ public class AnnouncementController {
         RestResponse<String> response = announcementService.updateIsRead(id);
         return ResponseEntity.ok(response);
     }
+    @PostMapping
+    public ResponseEntity<RestResponse<String>> createAnnouncement(@RequestBody CreateAnnouncement createAnnouncement ) {
+        RestResponse<String> response = announcementService.createAnnouncement(createAnnouncement);
+        return ResponseEntity.ok(response);
+    }
+
 }

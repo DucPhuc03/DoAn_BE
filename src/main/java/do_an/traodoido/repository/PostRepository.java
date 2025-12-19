@@ -41,4 +41,12 @@ public interface PostRepository extends JpaRepository<Post, Long> {
       AND p.postStatus <> do_an.traodoido.enums.PostStatus.DELETED
 """)
     List<Long> findAllPostId(@Param("userId") Long userId);
+
+    @Query("""
+    SELECT p.id
+    FROM Post p
+    WHERE p.postStatus = do_an.traodoido.enums.PostStatus.AVAILABLE
+    ORDER BY p.likeCount DESC
+""")
+    List<Long> findTop10PopularPosts(Pageable pageable);
 }

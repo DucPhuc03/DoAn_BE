@@ -34,6 +34,8 @@ public class ReportServiceImpl implements ReportService {
                 .reportedUser(reportedUser)
                 .reason(createReportDTO.getReason())
                 .reportDate(LocalDate.now())
+                .type(createReportDTO.getType())
+                .postId(createReportDTO.getPostId())
                 .status(ReportStatus.PENDING)
                 .build();
         reportRepository.save(report);
@@ -53,14 +55,15 @@ public class ReportServiceImpl implements ReportService {
                 .reason(report.getReason())
                 .type(report.getType())
                 .postId(report.getPostId()!=null?report.getPostId():null)
+
                 .reporter(UserChat.builder()
                         .userId(report.getReporter().getId())
-                        .username(report.getReporter().getUsername())
+                        .username(report.getReporter().getFullName())
                         .avatarUrl(report.getReporter().getAvatarUrl())
                         .build())
                 .reportedUser(UserChat.builder()
                         .userId(report.getReportedUser().getId())
-                        .username(report.getReportedUser().getUsername())
+                        .username(report.getReportedUser().getFullName())
                         .avatarUrl(report.getReportedUser().getAvatarUrl())
                         .build())
                 .reportDate(report.getReportDate())
@@ -69,6 +72,28 @@ public class ReportServiceImpl implements ReportService {
         return RestResponse.<List<ResReportDTO>>builder()
                 .data(resReportDTOS)
                 .message("Get all reports successfully")
+                .code(1000)
+                .build();
+    }
+    @PreAuthorize("hasRole('ADMIN')")
+    @Override
+    public RestResponse<String> deleteReport(Long id) {
+        reportRepository.deleteById(id);
+        return RestResponse.<String>builder()
+                .data(null)
+                .message("Delete report successfully")
+                .code(1000)
+                .build();
+    }
+    @PreAuthorize("hasRole('ADMIN')")
+    @Override
+    public RestResponse<String> updateStatus(Long id) {
+        Report report=reportRepository.findById(id).orElseThrow();
+        report.setStatus(ReportStatus.RESOLVED);
+        reportRepository.save(report);
+        return RestResponse.<String>builder()
+                .data(null)
+                .message("Update report successfully")
                 .code(1000)
                 .build();
     }

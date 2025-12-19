@@ -10,4 +10,6 @@ public interface ReportService {
     RestResponse<String> createReport(CreateReportDTO createReportDTO);
 
     RestResponse<List<ResReportDTO>> getAllReports();
+    RestResponse<String> deleteReport(Long id);
+    RestResponse<String> updateStatus(Long id);
 }

@@ -3,10 +3,7 @@ package do_an.traodoido.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import do_an.traodoido.dto.request.CreatePostDTO;
 import do_an.traodoido.dto.request.UpdateStatusPost;
-import do_an.traodoido.dto.response.ResPostDTO;
-import do_an.traodoido.dto.response.ResPostDetailDTO;
-import do_an.traodoido.dto.response.RestPageResponse;
-import do_an.traodoido.dto.response.RestResponse;
+import do_an.traodoido.dto.response.*;
 import do_an.traodoido.util.JwtService;
 import do_an.traodoido.service.PostService;
 import do_an.traodoido.service.UserService;
@@ -112,4 +109,8 @@ public class PostController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/admin/{id}")
+    public ResponseEntity<RestResponse<ResPostReportDTO>> getPostReport(@PathVariable("id") Long id){
+        return ResponseEntity.ok(postService.getPostReport(id));
+    }
 }

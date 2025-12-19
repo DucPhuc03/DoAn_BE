@@ -5,6 +5,7 @@ import do_an.traodoido.dto.request.UpdateStatusPost;
 import do_an.traodoido.dto.response.*;
 import do_an.traodoido.entity.*;
 import do_an.traodoido.enums.PostStatus;
+import do_an.traodoido.enums.ReportStatus;
 import do_an.traodoido.exception.InvalidException;
 import do_an.traodoido.exception.UnauthorizedAccessException;
 import do_an.traodoido.repository.*;
@@ -19,9 +20,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -43,8 +46,10 @@ public class PostServiceImpl implements PostService {
     private final VisionService visionService;
     private final GeocodingService geocodingService;
     private final EmbeddingService embeddingService;
+    private final ReportRepository reportRepository;
     
     @Override
+    @Transactional
     public RestResponse<String> createPost(CreatePostDTO createPostDTO, MultipartFile[] images) throws IOException {
             Category category = categoryRepository.findById(createPostDTO.getCategoryId())
                     .orElseThrow(() -> new InvalidException("Category", createPostDTO.getCategoryId()));
@@ -78,6 +83,7 @@ public class PostServiceImpl implements PostService {
                 post.setPostStatus(PostStatus.AVAILABLE);
                 postRepository.save(post);
             }
+            embeddingService.createEmbeddingForPost(post.getId());
             return RestResponse.<String>builder()
                     .code(1000)
                     .message("Post created successfully")
@@ -94,14 +100,18 @@ public class PostServiceImpl implements PostService {
 
         // Kiểm tra quyền xóa - chỉ owner mới được xóa
         if ( currentUser.getRole().equals("ADMIN")) {
-            postRepository.delete(post);
+            post.setPostStatus(PostStatus.DELETED);
+            postRepository.save(post);
         }
         else if (!post.getUser().getId().equals(currentUser.getId())) {
             throw new UnauthorizedAccessException("You don't have permission to delete this post");
         }
-        // Xóa post (cascade sẽ xóa luôn images)
-        post.setPostStatus(PostStatus.DELETED);
-        postRepository.save(post);
+        else {
+            // Xóa post (cascade sẽ xóa luôn images)
+            post.setPostStatus(PostStatus.DELETED);
+            postRepository.save(post);
+        }
+
         
         return RestResponse.<String>builder()
                 .code(1000)
@@ -204,7 +214,6 @@ public class PostServiceImpl implements PostService {
         }
         Category category = categoryRepository.findById(createPostDTO.getCategoryId())
                 .orElseThrow(() -> new InvalidException("Category", createPostDTO.getCategoryId()));
-
         post.setTitle(createPostDTO.getTitle());
         post.setDescription(createPostDTO.getDescription());
         post.setTag(createPostDTO.getTag());
@@ -419,5 +428,34 @@ public class PostServiceImpl implements PostService {
             throw new InvalidException("User", "username", username);
         }
         return user;
+    }
+
+    @Override
+    @PreAuthorize("hasRole('ADMIN')")
+    public RestResponse<ResPostReportDTO> getPostReport(Long id) {
+        Post post=postRepository.findById(id).orElseThrow();
+        List<String> imageUrls = post.getImages() != null
+                ? post.getImages().stream()
+                .map(Image::getImageUrl)
+                .toList()
+                : List.of();
+        int count= reportRepository.getReportsByPostId(id, ReportStatus.RESOLVED);
+        List<String> reasons=reportRepository.getReportReasonsByPostId(id,ReportStatus.RESOLVED);
+
+        ResPostReportDTO res=ResPostReportDTO.builder()
+                .postId(id)
+                .postTitle(post.getTitle())
+                .count(count)
+                .reasons(reasons)
+                .userId(post.getUser().getId())
+                .avatarUrl(post.getUser().getAvatarUrl())
+                .fullName(post.getUser().getFullName())
+                .imageUrl(imageUrls)
+                .build();
+        return RestResponse.<ResPostReportDTO>builder()
+                .code(1000)
+                .message("Posts report successfully")
+                .data(res)
+                .build();
     }
 }

@@ -1,5 +1,6 @@
 package do_an.traodoido.dto.response;
 
+import do_an.traodoido.enums.UserStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,5 +14,6 @@ public class UserLogin {
     private String name;
     private String avatarUrl;
     private String email;
+    private UserStatus status;
     private String role;
 }
