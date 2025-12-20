@@ -1,0 +1,25 @@
+version: "3.9"
+
+services:
+  backend:
+    build: .
+    container_name: trao-doi-do-backend
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    volumes:
+      - ./credentials/google-vision.json:/app/credentials/google-vision.json
+    depends_on:
+      - mysql
+      - redis
+
+  mysql:
+    image: mysql:8
+    container_name: mysql
+    environment:
+      MYSQL_DATABASE: trao_doi_do
+      MYSQL_ROOT_PASSWORD: 12345
+    ports:
+      - "3306:3306"
+

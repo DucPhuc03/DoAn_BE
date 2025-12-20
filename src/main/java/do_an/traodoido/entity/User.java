@@ -39,11 +39,14 @@ public class User implements UserDetails {
     private String bio;
     private String avatarUrl;
     private String role;
+    @Builder.Default
+    private int trustScore =30;
     @Enumerated(EnumType.STRING)
     private UserStatus status;
     private double latitude;
     private double longitude;
     private LocalDate createdAt;
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

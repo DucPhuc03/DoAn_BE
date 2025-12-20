@@ -22,6 +22,7 @@ public class ProfileDTO {
     private String bio;
     private String address;
     private int level;
+    private int trustScore;
     private List<ResPostDTO> posts;
     private List<ResPostDTO> likedPosts;
     List<ResFollowDTO> followers;

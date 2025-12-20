@@ -337,11 +337,11 @@ public class PostServiceImpl implements PostService {
                                     .map(Image::getImageUrl)
                                     .orElse(null))
                             .category(post.getCategory())
-                            .distance(distance)              // 👈 thêm vào DTO
+                            .distance(distance)
                             .build();
                 })
-                .filter(resPostDTO -> resPostDTO.getDistance() <maxDistance) // Lọc các bài đăng có khoảng cách hợp lệ
-                .sorted((java.util.Comparator.comparingDouble(ResPostDTO::getDistance)) // Sắp xếp theo khoảng cách
+                .filter(resPostDTO -> resPostDTO.getDistance() <maxDistance)
+                .sorted((java.util.Comparator.comparingDouble(ResPostDTO::getDistance))
                 )
                 .toList();
 
