@@ -98,8 +98,10 @@ public class ConversationServiceImpl implements ConversationService  {
         owner.setPostStatus(PostStatus.AVAILABLE);
         postRepository.save(owner);
         Optional<Post> requester= Optional.ofNullable(conversation.getTrade().getRequesterPost());
-        requester.ifPresent(post -> post.setPostStatus(PostStatus.AVAILABLE));
-        postRepository.save(requester.get());
+        if(requester.isPresent()){
+            requester.get().setPostStatus(PostStatus.AVAILABLE);
+            postRepository.save(requester.get());
+        }
         tradeRepository.deleteById(id);
         conversationRepository.delete(conversation);
 
